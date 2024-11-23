@@ -75,6 +75,9 @@ function App() {
 
   return (
     <div className="App">
+      <div>
+        <h1>Cafinity</h1>
+      </div>
       <Auth />
 
       <div>

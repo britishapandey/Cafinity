@@ -1,7 +1,7 @@
 import { db } from './config/firebase.js'; // Adjust extension to .js
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 
-// node src\testDatabase.js   -- to run testDatabase.js
+// node src/testDatabase.js   -- to run testDatabase.js
 
 // Collection reference
 const cafesCollectionRef = collection(db, "cafes");

@@ -10,8 +10,8 @@ const cafesCollectionRef = collection(db, "cafes");
 const saveTestCafe = async () => {
   try {
     const newCafe = {
-      name: "Homeboy",
-      address: "9760 Garden Grove Blvd, Garden Grove, CA 92844",
+      name: "HeyTea",
+      address: "Rowland Heights",
       averageRating: 4.4,
       amenities: {
         noise: "3",
@@ -36,7 +36,7 @@ const saveTestCafe = async () => {
 
     // Log the data being submitted
     console.log("Submitting the following cafe data to Firestore:");
-    console.log(JSON.stringify(newCafe, null, 2)); // Pretty-print the object for clarity
+    console.log(`Cafe "${newCafe.name}" added. The rest of the info is in the database.`);
 
     const docRef = await addDoc(cafesCollectionRef, newCafe);
     console.log(`Document added with ID: ${docRef.id}`);
@@ -53,31 +53,31 @@ const getAllCafes = async () => {
     const cafes = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
     cafes.forEach((cafe) => {
-      const cafeJson = {
-        name: cafe.name,
-        address: cafe.address,
-        rating: cafe.averageRating,
-        amenities: {
-          noiseLevel: cafe.amenities.noise,
-          seatingAvailability: cafe.amenities.seatingAvailability,
-          wifi: cafe.amenities.wifi,
-        },
-        hours: Object.entries(cafe.hours).map(([day, times]) => ({
-          day: day.charAt(0).toUpperCase() + day.slice(1),
-          open: times.open ? timeConvert(times.open) : "Closed",
-          close: times.close ? timeConvert(times.close) : "Closed",
-        })),
-        images: cafe.images,
-        location: cafe.location
-          ? {
-              latitude: cafe.location.latitude,
-              longitude: cafe.location.longitude,
-            }
-          : "Not available",
-      };
+      // const cafeJson = {
+      //   name: cafe.name,
+      //   address: cafe.address,
+      //   rating: cafe.averageRating,
+      //   amenities: {
+      //     noiseLevel: cafe.amenities.noise,
+      //     seatingAvailability: cafe.amenities.seatingAvailability,
+      //     wifi: cafe.amenities.wifi,
+      //   },
+      //   hours: Object.entries(cafe.hours).map(([day, times]) => ({
+      //     day: day.charAt(0).toUpperCase() + day.slice(1),
+      //     open: times.open ? timeConvert(times.open) : "Closed",
+      //     close: times.close ? timeConvert(times.close) : "Closed",
+      //   })),
+      //   images: cafe.images,
+      //   location: cafe.location
+      //     ? {
+      //         latitude: cafe.location.latitude,
+      //         longitude: cafe.location.longitude,
+      //       }
+      //     : "Not available",
+      // };
 
-      // Logging in JSON format
-      console.log(JSON.stringify(cafeJson, null, 2));
+      console.log(`Cafe Name: "${cafe.name}"`);
+      console.log("The rest of the info is in the database.");
       console.log(`----------------------------------------`);
     });
   } catch (err) {

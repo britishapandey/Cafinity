@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 function CafeForm({ onSubmitCafe }) {
   const [newCafeName, setNewCafeName] = useState("");
@@ -19,13 +20,76 @@ function CafeForm({ onSubmitCafe }) {
     saturday: { open: "", close: "" },
   });
   const [newCafeImages, setNewCafeImages] = useState([]);
+  const [imageUrl, setImageUrl] = useState(""); // State for URL input
+  const [imageFile, setImageFile] = useState(null); // State for file input
 
   const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
-  // Handle the button click for now to do nothing
+  // Handle image URL input
+  const handleImageUrl = () => {
+    if (imageUrl) {
+      setNewCafeImages([...newCafeImages, imageUrl]);
+      setImageUrl(""); // Clear input after adding
+    }
+  };
+
+  // Handle file input
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const storageRef = ref(storage, `cafes/${file.name}`);
+      try {
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        setNewCafeImages([...newCafeImages, downloadURL]); // Save the URL to Firestore
+      } catch (err) {
+        console.error("Error uploading image:", err);
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent any form submission behavior
-    console.log("Button clicked, but nothing happens.");
+    e.preventDefault();
+
+    // Check if required fields are filled
+    if (!newCafeName || !newCafeAddress || newCafeRating === 0) {
+      alert("Please fill in the required fields (Cafe Name, Address, and Rating).");
+      return;
+    }
+
+    // Default values for optional fields if not provided
+    const newCafe = {
+      name: newCafeName,
+      address: newCafeAddress,
+      rating: newCafeRating,
+      amenities: newCafeAmenities.noise || newCafeAmenities.seatingAvailability || newCafeAmenities.wifi ? newCafeAmenities : { noise: 'N/A', seatingAvailability: 'N/A', wifi: false },
+      hours: newCafeHours.sunday.open || newCafeHours.monday.open || newCafeHours.tuesday.open ? newCafeHours : {}, // default empty hours if not provided
+      images: newCafeImages.length > 0 ? newCafeImages : ['default-image-url'], // fallback to a default image URL if none are uploaded
+    };
+
+    onSubmitCafe(newCafe); // Submit the new cafe data
+
+    // Clear form data after submission
+    setNewCafeName("");
+    setNewCafeAddress("");
+    setNewCafeRating(0);
+    setNewCafeAmenities({
+      noise: "",
+      seatingAvailability: "",
+      wifi: false,
+    });
+    setNewCafeHours({
+      sunday: { open: "", close: "" },
+      monday: { open: "", close: "" },
+      tuesday: { open: "", close: "" },
+      wednesday: { open: "", close: "" },
+      thursday: { open: "", close: "" },
+      friday: { open: "", close: "" },
+      saturday: { open: "", close: "" },
+    });
+    setNewCafeImages([]);
+    setImageUrl("");
+    setImageFile(null);
   };
 
   return (
@@ -138,16 +202,30 @@ function CafeForm({ onSubmitCafe }) {
           id="image-url"
           type="text"
           placeholder="Image URL"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              setNewCafeImages([...newCafeImages, e.target.value]);
-              e.target.value = "";
-            }
-          }}
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
         />
+        <button 
+          onClick={handleImageUrl} 
+          disabled={!imageUrl} // Disable if URL input is empty
+        >
+          Add URL
+        </button>
+
+        <div>
+          <label htmlFor="image-upload">Upload Image:</label>
+          <input
+            id="image-upload"
+            type="file"
+            onChange={handleImageUpload}
+          />
+        </div>
+
         <ul>
           {newCafeImages.map((image, index) => (
-            <li key={index}>{image}</li>
+            <li key={index}>
+              <img src={image} alt={`Cafe Image ${index + 1}`} width="100" />
+            </li>
           ))}
         </ul>
       </div>

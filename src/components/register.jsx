@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle registration logic here
-    console.log('Registered with:', email, password);
+    setError("");
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Optional: Create a user profile in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        createdAt: serverTimestamp(),
+      });
+
+      alert('Registration successful!');
+      navigate('/login');
+    } catch (err) {
+      setError("Registration failed. Please check your details.");
+    }
   };
 
   return (
@@ -30,6 +50,7 @@ function Register() {
         />
         <button type="submit">Register</button>
       </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }

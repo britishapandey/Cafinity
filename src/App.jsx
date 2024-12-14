@@ -1,26 +1,26 @@
 import { useState, useEffect } from 'react';
-import { db } from './config/firebase';
+import { db, auth } from './config/firebase'; // Firebase config
 import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom'; // Import Navigate for redirection
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth'; // Firebase methods
 import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';
 import Login from './components/login';
 import Register from './components/register';
-import { auth } from './config/firebase'; // Import auth from Firebase
-import { onAuthStateChanged } from 'firebase/auth'; // Import Firebase auth state change listener
 
 function App() {
   const [cafeList, setCafeList] = useState([]);
-  const [user, setUser] = useState(null); // Store the authenticated user
-  const cafesCollectionRef = collection(db, "cafes");
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); // Set user when authentication state changes
+      setUser(currentUser);
     });
 
     return unsubscribe; // Cleanup on component unmount
   }, []);
+
+  const cafesCollectionRef = collection(db, "cafes");
 
   const getCafeList = async () => {
     try {
@@ -34,7 +34,7 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      getCafeList(); // Get cafe list when the user is logged in
+      getCafeList();
     }
   }, [user]);
 
@@ -47,28 +47,48 @@ function App() {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      alert("Signed out successfully!");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
     <Router>
       <div className="App">
-        <div>
+        <header>
           <h1>Cafinity</h1>
-        </div>
+          {user ? (
+            <button onClick={handleSignOut}>Sign Out</button>
+          ) : (
+            <Link to="/login">Login</Link>
+          )}
+        </header>
 
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Protected Route for cafe pages */}
           <Route
             path="/"
-            element={user ? (
-              <>
-                <CafeForm onSubmitCafe={onSubmitCafe} />
-                <CafeList cafes={cafeList} />
-              </>
-            ) : (
-              <Navigate to="/login" /> // Redirect to login if not authenticated
-            )}
+            element={
+              user ? (
+                <>
+                  <CafeForm onSubmitCafe={onSubmitCafe} />
+                  <CafeList cafes={cafeList} />
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/" /> : <Register />}
           />
         </Routes>
       </div>

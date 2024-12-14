@@ -2,8 +2,8 @@ import CafeCard from './CafeCard';
 
 function CafeList({ cafes }) {
   return (
-    <div>
-      {cafes.map((cafe) => (
+    <div className="cafe-list">
+      {cafes.map(cafe => (
         <CafeCard key={cafe.id} cafe={cafe} />
       ))}
     </div>

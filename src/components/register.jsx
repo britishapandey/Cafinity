@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -31,26 +32,37 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Email:</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
+    <div className="flex flex-col items-center justify-center mt-24">
+      <div className="text-xl">Welcome to</div>
+      <h1 className="font-extrabold mb-8">Cafinity!</h1>
+      <form className="flex flex-col text-left gap-4" onSubmit={handleSubmit}>
+        <div className="flex flex-col">
+          {/* <label>Email</label> */}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+          />
+        </div>
+        <div className="flex flex-col">
+          {/* <label>Password</label> */}
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+          />
+        </div>
+        <button type="submit" className="text-[#E7E4E1]">Register</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <p className="mt-4">
+        Already have an account? <Link to="/login">Sign in</Link>
+      </p>
     </div>
   );
 }

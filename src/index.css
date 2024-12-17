@@ -80,3 +80,19 @@ input {
   border: 2px solid #5B4A43;
   border-radius: 8px;
 }
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5) sepia(1) saturate(5) hue-rotate(12deg);
+}
+
+input[type="time"] {
+  color: #5B4A43;
+  background: #E7E4E1;
+  border: 2px solid #5B4A43;
+}
+
+input[type="number"] {
+  color: #5B4A43;
+  background: #E7E4E1;
+  border: 2px solid #5B4A43;
+}

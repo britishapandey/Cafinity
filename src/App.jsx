@@ -7,6 +7,7 @@ import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';
 import Login from './components/login';
 import Register from './components/register';
+import './index.css';
 
 function App() {
   const [cafeList, setCafeList] = useState([]);
@@ -58,13 +59,12 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className="">
         <header>
-          <h1>Cafinity</h1>
           {user ? (
             <button onClick={handleSignOut}>Sign Out</button>
           ) : (
-            <Link to="/login">Login</Link>
+            <Link to="/login"></Link>
           )}
         </header>
 

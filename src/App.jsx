@@ -67,8 +67,8 @@ function App() {
           element={
             user ? (
               <>
-                <CafeForm onSubmitCafe={onSubmitCafe} />
                 <CafeList cafes={cafeList} />
+                <CafeForm onSubmitCafe={onSubmitCafe} />
               </>
             ) : (
               <Navigate to="/login" />

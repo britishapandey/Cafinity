@@ -1,29 +1,31 @@
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
+import React, { useState, useEffect } from 'react';
 import { db, auth } from './config/firebase'; // Firebase config
 import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { Routes, Route, Link, Navigate } from 'react-router-dom'; // No Router here
-import { onAuthStateChanged, signOut } from 'firebase/auth'; // Firebase methods
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
 import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';
-import Login from './components/login';
-import Register from './components/register';
-import Navbar from './components/NavBar';
+import Login from './components/Login';
+import Register from './components/Register';
+import Navbar from './components/NavBar'; // Updated NavBar import
 import './index.css';
+import Profile from './components/profile';
 
 function App() {
-  const [cafeList, setCafeList] = useState([]);
-  const [user, setUser] = useState(null);
+  const [cafeList, setCafeList] = useState([]); // State for cafe list
+  const [user, setUser] = useState(null); // State for logged-in user
 
+  // Monitor user authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
-
-    return unsubscribe; // Cleanup on component unmount
+    return unsubscribe; // Cleanup subscription
   }, []);
 
   const cafesCollectionRef = collection(db, "cafes");
 
+  // Fetch cafe list from Firebase
   const getCafeList = async () => {
     try {
       const data = await getDocs(cafesCollectionRef);
@@ -34,12 +36,14 @@ function App() {
     }
   };
 
+  // Fetch cafe list when user is logged in
   useEffect(() => {
     if (user) {
       getCafeList();
     }
   }, [user]);
 
+  // Add a new cafe to Firebase
   const onSubmitCafe = async (newCafe) => {
     try {
       await addDoc(cafesCollectionRef, newCafe);
@@ -49,29 +53,15 @@ function App() {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      alert("Signed out successfully!");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
   return (
-    <div className="">
+    <div>
       <header>
-        {user ? (
-          <>
-            <Navbar />
-            <button onClick={handleSignOut}>Sign Out</button>
-          </>
-        ) : (
-          <Link to="/login"></Link>
-        )}
+        {/* Pass the user state to the Navbar */}
+        <Navbar user={user} />
       </header>
 
       <Routes>
+        {/* Home route - visible only to authenticated users */}
         <Route
           path="/"
           element={
@@ -85,13 +75,23 @@ function App() {
             )
           }
         />
+
+        {/* Login route */}
         <Route
           path="/login"
           element={user ? <Navigate to="/" /> : <Login />}
         />
+
+        {/* Register route */}
         <Route
           path="/register"
           element={user ? <Navigate to="/" /> : <Register />}
+        />
+
+        {/* Profile route - visible only to authenticated users */}
+        <Route
+          path="/profile"
+          element={user ? <Profile /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>

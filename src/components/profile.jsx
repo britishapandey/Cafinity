@@ -76,6 +76,7 @@ function Profile() {
       {!isEditing ? (
         <div>
           <p><strong>Name:</strong> {profileData.name}</p>
+          <p><strong>Email:</strong> {user.email}</p> {/* Display user's email */}
           <p><strong>Role:</strong> {profileData.role}</p>
           <button
             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"

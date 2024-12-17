@@ -93,11 +93,10 @@ function CafeForm({ onSubmitCafe }) {
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center text-center">
       <h2>Add a New Cafe</h2>
-      
       <div>
-        <label htmlFor="cafe-name">Cafe Name:</label>
+        {/* <label htmlFor="cafe-name">Cafe Name:</label> */}
         <input
           id="cafe-name"
           placeholder="Cafe name..."
@@ -107,7 +106,7 @@ function CafeForm({ onSubmitCafe }) {
       </div>
 
       <div>
-        <label htmlFor="cafe-address">Cafe Address:</label>
+        {/* <label htmlFor="cafe-address">Cafe Address:</label> */}
         <input
           id="cafe-address"
           placeholder="Cafe address..."
@@ -117,7 +116,7 @@ function CafeForm({ onSubmitCafe }) {
       </div>
 
       <div>
-        <label htmlFor="cafe-rating">Rating (0-5):</label>
+        {/* <label htmlFor="cafe-rating">Rating (0-5):</label> */}
         <input
           id="cafe-rating"
           type="number"
@@ -130,7 +129,7 @@ function CafeForm({ onSubmitCafe }) {
       <div>
         <h4>Amenities</h4>
         <div>
-          <label htmlFor="noise-level">Noise Level:</label>
+          {/* <label htmlFor="noise-level">Noise Level:</label> */}
           <input
             id="noise-level"
             placeholder="Noise Level"
@@ -141,7 +140,7 @@ function CafeForm({ onSubmitCafe }) {
           />
         </div>
         <div>
-          <label htmlFor="seating-availability">Seating Availability:</label>
+          {/* <label htmlFor="seating-availability">Seating Availability:</label> */}
           <input
             id="seating-availability"
             placeholder="Seating Availability"
@@ -151,7 +150,7 @@ function CafeForm({ onSubmitCafe }) {
             }
           />
         </div>
-        <label htmlFor="wifi">
+        <label htmlFor="wifi" className="flex gap-4 justify-center">
           <input
             id="wifi"
             type="checkbox"
@@ -160,7 +159,7 @@ function CafeForm({ onSubmitCafe }) {
               setNewCafeAmenities({ ...newCafeAmenities, wifi: e.target.checked })
             }
           />
-          Wi-Fi Available
+          <p>Wi-Fi Available?</p>
         </label>
       </div>
 
@@ -168,7 +167,7 @@ function CafeForm({ onSubmitCafe }) {
         <h4>Hours</h4>
         {daysOfWeek.map((day) => (
           <div key={day}>
-            <label>{day.charAt(0).toUpperCase() + day.slice(1)}</label>
+            <label>{day.charAt(0).toUpperCase() + day.slice(1)} </label>
             <input
               type="time"
               placeholder="Open"
@@ -180,6 +179,7 @@ function CafeForm({ onSubmitCafe }) {
                 })
               }
             />
+            <span> to </span>
             <input
               type="time"
               placeholder="Close"
@@ -197,28 +197,31 @@ function CafeForm({ onSubmitCafe }) {
 
       <div>
         <h4>Images</h4>
-        <label htmlFor="image-url">Image URL:</label>
-        <input
-          id="image-url"
-          type="text"
-          placeholder="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-        <button 
-          onClick={handleImageUrl} 
-          disabled={!imageUrl} // Disable if URL input is empty
-        >
-          Add URL
-        </button>
+        {/* <label htmlFor="image-url">Image URL:</label> */}
+        <div className="flex justify-center items-center">
 
-        <div>
-          <label htmlFor="image-upload">Upload Image:</label>
           <input
-            id="image-upload"
-            type="file"
-            onChange={handleImageUpload}
+            id="image-url"
+            type="text"
+            placeholder="Image URL"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
           />
+          <button 
+            onClick={handleImageUrl} 
+            disabled={!imageUrl} // Disable if URL input is empty
+          >
+            Add URL
+          </button>
+
+          <div>
+            {/* <label htmlFor="image-upload">Upload Image:</label> */}
+            <input
+              id="image-upload"
+              type="file"
+              onChange={handleImageUpload}
+            />
+          </div>
         </div>
 
         <ul>

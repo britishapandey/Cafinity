@@ -96,3 +96,15 @@ input[type="number"] {
   background: #E7E4E1;
   border: 2px solid #5B4A43;
 }
+
+input[type="file"] {
+  border: 0px;
+}
+
+input[type="file"]::-webkit-file-upload-button{ 
+  background-color: #5B4A43;
+  border: 0px;
+  color: #E7E4E1;
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+}

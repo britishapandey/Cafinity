@@ -7,6 +7,7 @@ import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';
 import Login from './components/login';
 import Register from './components/register';
+import Navbar from './components/NavBar';
 import './index.css';
 
 function App() {
@@ -62,7 +63,10 @@ function App() {
       <div className="">
         <header>
           {user ? (
-            <button onClick={handleSignOut}>Sign Out</button>
+            <>
+              <Navbar />
+              <button onClick={handleSignOut}>Sign Out</button>
+            </>
           ) : (
             <Link to="/login"></Link>
           )}

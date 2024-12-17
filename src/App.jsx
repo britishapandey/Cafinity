@@ -1,6 +1,7 @@
 import { db, auth } from './config/firebase'; // Firebase config
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react'; // React hooks
 import { onAuthStateChanged, signOut } from 'firebase/auth'; // Firebase methods
 import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';

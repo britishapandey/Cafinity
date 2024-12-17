@@ -1,7 +1,7 @@
+import React, { useState, useEffect } from 'react'; // Import useState and useEffect
 import { db, auth } from './config/firebase'; // Firebase config
 import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react'; // React hooks
+import { Routes, Route, Link, Navigate } from 'react-router-dom'; // No Router here
 import { onAuthStateChanged, signOut } from 'firebase/auth'; // Firebase methods
 import CafeForm from './components/CafeForm';
 import CafeList from './components/CafeList';
@@ -59,44 +59,42 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="">
-        <header>
-          {user ? (
-            <>
-              <Navbar />
-              <button onClick={handleSignOut}>Sign Out</button>
-            </>
-          ) : (
-            <Link to="/login"></Link>
-          )}
-        </header>
+    <div className="">
+      <header>
+        {user ? (
+          <>
+            <Navbar />
+            <button onClick={handleSignOut}>Sign Out</button>
+          </>
+        ) : (
+          <Link to="/login"></Link>
+        )}
+      </header>
 
-        <Routes>
-          <Route
-            path="/"
-            element={
-              user ? (
-                <>
-                  <CafeForm onSubmitCafe={onSubmitCafe} />
-                  <CafeList cafes={cafeList} />
-                </>
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route
-            path="/login"
-            element={user ? <Navigate to="/" /> : <Login />}
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/" /> : <Register />}
-          />
-        </Routes>
-      </div>
-    </Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            user ? (
+              <>
+                <CafeForm onSubmitCafe={onSubmitCafe} />
+                <CafeList cafes={cafeList} />
+              </>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" /> : <Register />}
+        />
+      </Routes>
+    </div>
   );
 }
 

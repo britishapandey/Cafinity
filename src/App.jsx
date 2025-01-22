@@ -79,8 +79,8 @@ function App() {
                   ></Map>
                   </APIProvider>
                 </div>
-                <CafeForm onSubmitCafe={onSubmitCafe} />
                 <CafeList cafes={cafeList} />
+                <CafeForm onSubmitCafe={onSubmitCafe} />
               </>
             ) : (
               <Navigate to="/login" />

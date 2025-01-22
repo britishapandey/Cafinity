@@ -10,6 +10,8 @@ import Register from './components/Register';
 import Navbar from './components/NavBar'; // Updated NavBar import
 import './index.css';
 import Profile from './components/profile';
+import { APIProvider, Map } from '@vis.gl/react-google-maps';
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 function App() {
   const [cafeList, setCafeList] = useState([]); // State for cafe list
@@ -67,6 +69,16 @@ function App() {
           element={
             user ? (
               <>
+                <div className="h-8">
+                  <APIProvider apiKey={API_KEY} onLoad={() => console.log('Google Maps API loaded')}>
+                  <Map
+                    style={{ borderRadius: "20px" }}
+                    defaultZoom={13}
+                    defaultCenter={{ lat: 37.7749, lng: -122.4194 }}
+                    gestureHandling={"greedy"}
+                  ></Map>
+                  </APIProvider>
+                </div>
                 <CafeForm onSubmitCafe={onSubmitCafe} />
                 <CafeList cafes={cafeList} />
               </>

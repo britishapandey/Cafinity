@@ -48,7 +48,7 @@ return(
         {/* Pass the user state to the Navbar */}
         <Navbar user={user} />
         </header>
-        <div className="h-8">
+        <div className="h-64">
             <APIProvider apiKey={API_KEY} onLoad={() => console.log('Google Maps API loaded')}>
             <Map
             style={{ borderRadius: "20px" }}

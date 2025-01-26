@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Star, User } from "lucide-react";
+import { Home, Star, User, Search } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 
@@ -25,6 +25,9 @@ const Navbar = ({ user }) => {
           </Link>
           <Link to="/profile" className="m-4 flex items-center">
             <User color="#6490E1" />
+          </Link>
+          <Link to="/search" className="m-4 flex items-center"> {/* New Link for SearchFilter */}
+            <Search color="#6490E1" /> {/* Using Search icon */}
           </Link>
           {user ? (
             <button

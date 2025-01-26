@@ -34,6 +34,10 @@ npm install
 ```
 This will install all dependencies listed in the `package.json` file.
 
+npm install -D tailwindcss
+npm i geolocation
+npm i @vis.gl/react-google-maps
+
 ### **Step 3: Set up Firebase**
 Make sure you have a Firebase account and project. Add your Firebase configuration details in the `src/config/firebase.js` file to initialize Firebase services.
 ```bash

@@ -71,6 +71,10 @@ function App() {
 
   return (
     <div>
+      <header>
+      {/* Pass the user state to the Navbar */}
+      <Navbar user={user} />
+      </header>
 
       <Routes>
         {/* Home route - visible only to authenticated users */}
@@ -79,20 +83,6 @@ function App() {
           element={
             user ? (
               <>
-                {/* <div className="h-8">
-                  <APIProvider apiKey={API_KEY} onLoad={() => console.log('Google Maps API loaded')}>
-                  <Map
-                    style={{ borderRadius: "20px" }}
-                    defaultZoom={13}
-                    defaultCenter={{ lat: 37.7749, lng: -122.4194 }}
-                    gestureHandling={"greedy"}
-                  >
-
-                  </Map>
-                  </APIProvider>
-                </div>
-                <CafeList cafes={cafeList} />
-                <CafeForm onSubmitCafe={onSubmitCafe} /> */}
                 <Home user={user}/>
               </>
             ) : (

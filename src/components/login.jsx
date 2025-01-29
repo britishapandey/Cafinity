@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../config/firebase';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../config/firebase";
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ function Login() {
     setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate("/");
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     } finally {
@@ -27,52 +27,81 @@ function Login() {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError("Google sign-in failed. Try again.");
+      setError("Google sign-in failed. Please try again.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mt-24">
-      <div className="text-xl">Welcome back to</div>
-      <h1 className="font-extrabold mb-8">Cafinity!</h1>
-      <form className="flex flex-col text-left gap-4" onSubmit={handleEmailLogin}>
-        <div className="flex flex-col">
-          {/* <label>Email</label> */}
+    <div className="flex flex-col items-center justify-center h-screen bg-[#FAF8F5]">
+      <h1 className="text-4xl font-bold mb-6">Welcome back to Cafinity!</h1>
+      <form
+        className="bg-white p-6 shadow-lg rounded-md w-80"
+        onSubmit={handleEmailLogin}
+      >
+        <div className="flex flex-col mb-4">
+          <label className="text-sm font-semibold mb-2">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder="Enter your email"
             required
+            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-[#B07242]"
+            disabled={loading}
           />
         </div>
-        <div className="flex flex-col">
-          {/* <label>Password</label> */}
+        <div className="flex flex-col mb-4">
+          <label className="text-sm font-semibold mb-2">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder="Enter your password"
             required
+            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-[#B07242]"
+            disabled={loading}
           />
         </div>
-        <button type="submit" disabled={loading} className="text-[#E7E4E1]">Login</button>
+        {/* Center-align button */}
+        <div className="flex justify-center ">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full m-0 rounded-md text-white ${
+              loading ? "bg-gray-400" : "bg-[#B07242] hover:bg-[white]"
+            }`}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </div>
       </form>
 
-      <div className="flex items-center justify-center gap-2">
-        <hr className="w-12 border border-[#5B4A43] "/>or<hr className="w-12 border border-[#5B4A43]"/>
+
+      <div className="flex items-center justify-center mt-4 gap-2">
+        <hr className="w-12 border border-gray-400" /> or{" "}
+        <hr className="w-12 border border-gray-400" />
       </div>
-      <button onClick={handleGoogleSignIn} disabled={loading} className="text-[#E7E4E1]">Sign in with Google</button>
+      <button
+        onClick={handleGoogleSignIn}
+        disabled={loading}
+        className={`mt-4 p-2 w-80 rounded-md text-white ${
+          loading ? "bg-gray-400" : "bg-[#6490E1] hover:bg-[white]"
+        }`}
+      >
+        Sign in with Google
+      </button>
 
-      <p className="mt-4">
-        Don't have an account? <Link to="/register">Register here</Link>
+      <p className="mt-4 text-sm">
+        Don't have an account?{" "}
+        <Link to="/register" className="text-[#B07242] hover:underline">
+          Register here
+        </Link>
       </p>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
     </div>
   );
-}
+};
 
 export default Login;

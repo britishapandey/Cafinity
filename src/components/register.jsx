@@ -24,6 +24,12 @@ function Register() {
         createdAt: serverTimestamp(),
       });
 
+      const userId = user.uid;
+      // Used to identify admins & business owners from regular users
+      const additionalClaims = {
+        businessOwner: true,
+      };
+
       alert('Registration successful!');
       navigate('/login');
     } catch (err) {

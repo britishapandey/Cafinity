@@ -4,13 +4,14 @@ import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
-import Login from './components/Login';
+import Login from './components/login';
 import Register from './components/Register';
 import Navbar from './components/NavBar'; // Updated NavBar import
 import './index.css';
 import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
+import OwnerDashboard from './components/OwnerDashboard';
 
 
 function App() {
@@ -122,7 +123,14 @@ function App() {
             )
           }
         />
+
+        <Route
+          path="/business"
+          element={<OwnerDashboard />}
+          />
       </Routes>
+
+
     </div>
   );
 }

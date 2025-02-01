@@ -1,38 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from './config/firebase'; // Firebase config
-import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import { db, auth } from './config/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
-import Navbar from './components/NavBar'; // Updated NavBar import
+import Navbar from './components/NavBar';
 import './index.css';
 import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
-import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
-
+import CafeList from './components/CafeList';
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
-  const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
-  const [filteredCafes, setFilteredCafes] = useState([]);
+  const [userRole, setUserRole] = useState("user"); // State for user role
+  const [cafeList, setCafeList] = useState([]); // State for cafe list
+  const [filteredCafes, setFilteredCafes] = useState([]); // State for filtered cafes
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
 
+  // Fetch cafe list from Firestore
   const getCafeList = async () => {
     try {
       const data = await getDocs(cafesCollectionRef);
-      const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setCafeList(filteredData);
-      setFilteredCafes(filteredData); // Initialize filteredCafes with all cafes
+      const allCafes = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      console.log("All Cafes:", allCafes);
+  
+      const californiaCafes = allCafes.filter((cafe) => cafe.state === "CA");
+      console.log("California Cafes:", californiaCafes);
+  
+      const randomizedCafes = [...californiaCafes].sort(() => Math.random() - 0.5);
+      console.log("Randomized Cafes:", randomizedCafes);
+  
+      setCafeList(randomizedCafes);
+      setFilteredCafes(randomizedCafes);
     } catch (err) {
       console.error(err);
     }
   };
+
   useEffect(() => {
     getCafeList(); // Fetch data on initial load
-  }, []); 
-
+  }, []);
 
   // Monitor user authentication state
   useEffect(() => {
@@ -42,38 +51,35 @@ function App() {
     return unsubscribe; // Cleanup subscription
   }, []);
 
+  // Handle search filter submission
   const handleSearchSubmit = (filters) => {
     const term = filters.searchTerm.toLowerCase();
     let tempFilteredCafes = [...cafeList];
 
+    // Filter by search term
     if (term) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.name.toLowerCase().includes(term));
+      tempFilteredCafes = tempFilteredCafes.filter((cafe) =>
+        cafe.name.toLowerCase().includes(term)
+      );
     }
 
-    if (filters.wifi || filters.powerOutlets) { // Using wifi for both filters for now
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.amenities && cafe.amenities.wifi === true); // Filter for wifi: true
+    // Filter by amenities (Wi-Fi or power outlets)
+    if (filters.wifi || filters.powerOutlets) {
+      tempFilteredCafes = tempFilteredCafes.filter(
+        (cafe) =>
+          cafe.attributes &&
+          (cafe.attributes.WiFi === "True" || cafe.attributes.WiFi === true)
+      );
     }
 
     setFilteredCafes(tempFilteredCafes);
   };
 
-
-  const onSubmitCafe = async (newCafe) => {
-    try {
-      await addDoc(cafesCollectionRef, newCafe);
-      getCafeList(); // Refresh cafe list after adding
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-
-
   return (
     <div>
       <header>
-      {/* Pass the user state to the Navbar */}
-      <Navbar user={user} />
+        {/* Pass the user and userRole state to the Navbar */}
+        <Navbar user={user} userRole={userRole} />
       </header>
 
       <Routes>
@@ -83,7 +89,8 @@ function App() {
           element={
             user ? (
               <>
-                <Home user={user}/>
+                <Home user={user} />
+                <CafeList cafes={filteredCafes} />
               </>
             ) : (
               <Navigate to="/login" />
@@ -106,16 +113,23 @@ function App() {
         {/* Profile route - visible only to authenticated users */}
         <Route
           path="/profile"
-          element={user ? <Profile /> : <Navigate to="/login" />}
+          element={
+            user ? (
+              <Profile setUserRole={setUserRole} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
+        {/* Search route - visible only to authenticated users */}
         <Route
           path="/search"
           element={
             user ? (
               <>
                 <SearchFilter onSearch={handleSearchSubmit} />
-                <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
+                <CafeList cafes={filteredCafes} />
               </>
             ) : (
               <Navigate to="/login" />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { setDoc, doc, serverTimestamp, getDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "../config/firebase";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -16,39 +16,47 @@ const Register = () => {
     setLoading(true);
     setError("");
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Create a user profile in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        createdAt: serverTimestamp(),
-      });
-
+  
+      // Check if profile exists in Firestore
+      const profileDocRef = doc(db, "profiles", user.uid); // Changed "users" to "profiles"
+      const profileSnapshot = await getDoc(profileDocRef);
+  
+      if (!profileSnapshot.exists()) {
+        await setDoc(profileDocRef, {
+          email: user.email,
+          createdAt: serverTimestamp(),
+          role: "user",
+        });
+      }
+  
       navigate("/");
     } catch (err) {
-      setError("Registration failed. Please check your details.");
+      setError(err.message || "Registration failed. Please check your details.");
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError("");
     try {
-      setLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-
-      // Create a user profile in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        createdAt: serverTimestamp(),
-      });
-
+  
+      const profileDocRef = doc(db, "profiles", user.uid); // Changed "users" to "profiles"
+      const profileSnapshot = await getDoc(profileDocRef);
+  
+      if (!profileSnapshot.exists()) {
+        await setDoc(profileDocRef, {
+          email: user.email,
+          createdAt: serverTimestamp(),
+          role: "user",
+        });
+      }
+  
       navigate("/");
     } catch (err) {
       setError("Google sign-up failed. Please try again.");
@@ -60,10 +68,7 @@ const Register = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-[#FAF8F5]">
       <h1 className="text-4xl font-bold mb-6">Join the Cafinity community!</h1>
-      <form
-        className="bg-white p-6 shadow-lg rounded-md w-80"
-        onSubmit={handleEmailRegister}
-      >
+      <form className="bg-white p-6 shadow-lg rounded-md w-80" onSubmit={handleEmailRegister}>
         <div className="flex flex-col mb-4">
           <label className="text-sm font-semibold mb-2">Email</label>
           <input
@@ -92,8 +97,8 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full m-0 rounded-md text-white ${
-              loading ? "bg-gray-400" : "bg-[#B07242] hover:bg-[white]"
+            className={`w-full m-0 p-2 rounded-md text-white ${
+              loading ? "bg-gray-400" : "bg-[#B07242] hover:bg-[#A06030]"
             }`}
           >
             {loading ? "Registering..." : "Register"}
@@ -102,14 +107,13 @@ const Register = () => {
       </form>
 
       <div className="flex items-center justify-center mt-4 gap-2">
-        <hr className="w-12 border border-gray-400" /> or{" "}
-        <hr className="w-12 border border-gray-400" />
+        <hr className="w-12 border border-gray-400" /> or <hr className="w-12 border border-gray-400" />
       </div>
       <button
         onClick={handleGoogleSignUp}
         disabled={loading}
         className={`mt-4 p-2 w-80 rounded-md text-white ${
-          loading ? "bg-gray-400" : "bg-[#6490E1] hover:bg-[white]"
+          loading ? "bg-gray-400" : "bg-[#6490E1] hover:bg-[#507AC4]"
         }`}
       >
         Sign up with Google

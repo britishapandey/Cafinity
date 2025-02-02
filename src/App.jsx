@@ -11,6 +11,7 @@ import './index.css';
 import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
+import CafeView from './components/CafeView';
 
 
 function App() {
@@ -132,6 +133,11 @@ function App() {
             )
           }
         />
+        <Route
+          path="/cafe/:cafeId"
+          element={user ? <CafeView /> : <Navigate to="/login" />} 
+        />
+
       </Routes>
     </div>
   );

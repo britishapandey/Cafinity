@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './config/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
@@ -22,7 +22,8 @@ function App() {
   // Fetch cafe list from Firestore
   const getCafeList = async () => {
     try {
-      const data = await getDocs(cafesCollectionRef);
+      const fiveCafes = query(cafesCollectionRef, limit(5));
+      const data = await getDocs(fiveCafes);
       const allCafes = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       console.log("All Cafes:", allCafes);
   
@@ -136,6 +137,7 @@ function App() {
             )
           }
         />
+
       </Routes>
     </div>
   );

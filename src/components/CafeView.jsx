@@ -1,29 +1,44 @@
 import React from 'react';
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-function CafeCard({ cafe }) {
+function CafeView({ cafes }) {
+
+  // idk how to put these two lines of logic in App.jsx so they are here
+  const { id } = useParams();
+  var cafe = cafes.find((c) => c.id === id); // not currently working
+
+  // error handling logic (it is always an error rn)
+  if (!cafe) return <h1>Cafe Not Found</h1>;
+
   
-  // navigation for going to cafeview
-  const navigate = useNavigate();
-
-  // oh wow all of this needs work. good info to almost all have here tho
   return (
-    <div 
-      className="max-w-sm w-full bg-white rounded-lg shadow-lg overflow-hidden m-4" 
-      onClick={() => navigate(`/cafe/${cafe.id}`)}
-    >
-      
-      {/* Cafe Image */}
-      <img
-            className="w-full h-48 object-cover"
-            src={cafe.image || '/path/to/local/placeholder.jpg'}
-            alt={`Cafe ${cafe.name}`}
-        />
+    <div>
 
-      {/* Cafe Details */}
-      <div className="p-6">
+        {/*
+        big photo 
+        name
+        address
+        hours
+        stars and reviews
+        available amenities
+
+        make it like. available to press backwards button on top left. 
+        it's its own page not layered. but back arrow will bring u back to where u were before
+
+        basically copy pasted from cafecard rn bc i cannot load this yet to work on
+        */}
+
+        <img classname="" src={cafe.image} alt={cafe.name}></img>
+        
+        {/* Cafe Details */}
+        <div className="p-6">
             {/* Cafe Name */}
             <h3 className="text-xl font-semibold text-gray-800 mb-2">{cafe.name}</h3>
+
+            {/* Address */}
+            <p className="text-gray-600 mb-4">
+            {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
+            </p>
 
             {/* Rating */}
             <div className="flex items-center mb-4">
@@ -62,9 +77,12 @@ function CafeCard({ cafe }) {
                 ))}
             </ul>
             </div>
+
         </div>
+
     </div>
   );
 }
+        
 
-export default CafeCard;
+export default CafeView;

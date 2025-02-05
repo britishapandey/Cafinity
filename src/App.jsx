@@ -11,6 +11,7 @@ import './index.css';
 import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList';
+import CafeView from './components/CafeView';
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
@@ -136,6 +137,13 @@ function App() {
               <Navigate to="/login" />
             )
           }
+        />
+
+        <Route
+          path="/cafe/:cafeId"
+          element={
+            <CafeView cafes={filteredCafes}/> // HELP ME IDK HOW TO ONLY SEND ONE CAFE
+          } 
         />
 
       </Routes>

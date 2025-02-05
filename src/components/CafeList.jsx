@@ -14,7 +14,10 @@ function CafeList({ cafes }) {
       {/* Display the visible cafes */}
       <div className="cafe-list flex flex-wrap justify-center">
         {cafes.slice(0, visibleCafes).map((cafe) => (
-          <CafeCard key={cafe.id || cafe.business_id} cafe={cafe} />
+          <CafeCard 
+            key={cafe.id || cafe.business_id} 
+            cafe={cafe} 
+            />
         ))}
       </div>
 

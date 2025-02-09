@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Star, User, Search } from "lucide-react";
+import { Home, Star, User, Search, Settings } from "lucide-react"; // Added Settings icon for admin/owner
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 
-const Navbar = ({ user }) => {
+const Navbar = ({ user, userRole }) => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -26,9 +26,15 @@ const Navbar = ({ user }) => {
           <Link to="/profile" className="m-4 flex items-center">
             <User color="#6490E1" />
           </Link>
-          <Link to="/search" className="m-4 flex items-center"> {/* New Link for SearchFilter */}
-            <Search color="#6490E1" /> {/* Using Search icon */}
+          <Link to="/search" className="m-4 flex items-center">
+            <Search color="#6490E1" />
           </Link>
+          {/* Show additional options for cafe owners */}
+          {userRole === "owner" && (
+            <Link to="/owner-dashboard" className="m-4 flex items-center">
+              <Settings color="#6490E1" /> {/* Example: Settings icon for owner dashboard */}
+            </Link>
+          )}
           {user ? (
             <button
               onClick={handleSignOut}

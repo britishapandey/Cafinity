@@ -2,47 +2,66 @@ import React from 'react';
 
 function CafeCard({ cafe }) {
   return (
-    <div className="max-w-xs w-full bg-white rounded-lg shadow-lg overflow-hidden m-4">
-      <img 
+    <div className="max-w-sm w-full bg-white rounded-lg shadow-lg overflow-hidden m-4">
+      {/* Cafe Image */}
+      <img
         className="w-full h-48 object-cover"
-        src={cafe.images && cafe.images.length > 0 ? cafe.images[0] : 'https://via.placeholder.com/400x200'}
+        src={cafe.image || '/path/to/local/placeholder.jpg'}
         alt={`Cafe ${cafe.name}`}
       />
-      <div className="p-4">
-        <h3 className="text-xl font-semibold text-gray-800">{cafe.name}</h3>
-        <p className="text-gray-600">{cafe.address}</p>
-        <p className="mt-2 text-gray-800">Rating: {cafe.rating}</p>
-        <p className="mt-2 text-gray-800">Amenities:</p>
-        <ul className="list-inside text-gray-600">
-          <li>Noise: {cafe.amenities.noise}</li>
-          <li>Seating: {cafe.amenities.seatingAvailability}</li>
-          <li>Wi-Fi: {cafe.amenities.wifi ? 'Available' : 'Not Available'}</li>
-        </ul>
-        
-        <div className="mt-4">
-          <h4 className="font-medium text-gray-800">Hours:</h4>
-          <ul className="list-disc pl-5 text-gray-600">
-            {Object.keys(cafe.hours).map((day) => (
-              <li key={day}>
-                {day.charAt(0).toUpperCase() + day.slice(1)}: {cafe.hours[day].open} - {cafe.hours[day].close}
-              </li>
-            ))}
+
+      {/* Cafe Details */}
+      <div className="p-6">
+        {/* Cafe Name */}
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">{cafe.name}</h3>
+
+        {/* Address */}
+        <p className="text-gray-600 mb-4">
+          {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
+        </p>
+
+        {/* Rating */}
+        <div className="flex items-center mb-4">
+          <span className="text-yellow-500">★</span>
+          <span className="ml-1 text-gray-800">{cafe.stars}</span>
+          <span className="ml-2 text-gray-600">({cafe.review_count} reviews)</span>
+        </div>
+
+        {/* Categories */}
+        <p className="text-gray-800 mb-4">
+          <strong>Categories:</strong> {cafe.categories}
+        </p>
+
+        {/* Amenities */}
+        <div className="mb-4">
+          <p className="text-gray-800 font-medium mb-2">Amenities:</p>
+          <ul className="list-disc list-inside text-gray-600">
+            {cafe.attributes &&
+              Object.entries(cafe.attributes).map(([key, value]) => (
+                <li key={key}>
+                  <strong>{key}:</strong> {value}
+                </li>
+              ))}
           </ul>
         </div>
 
-        <div className="mt-4">
-          <h4 className="font-medium text-gray-800">Images:</h4>
-          <div className="flex space-x-2">
-            {cafe.images && cafe.images.slice(0, 3).map((image, index) => (
-              <img 
-                key={index}
-                className="w-16 h-16 object-cover rounded-md"
-                src={image}
-                alt={`Cafe ${cafe.name} Image ${index}`}
-              />
-            ))}
-          </div>
+        {/* Hours */}
+        <div className="mb-4">
+          <p className="text-gray-800 font-medium mb-2">Hours:</p>
+          <ul className="list-disc list-inside text-gray-600">
+            {cafe.hours &&
+              Object.entries(cafe.hours).map(([day, hours]) => (
+                <li key={day}>
+                  <strong>{day}:</strong> {hours}
+                </li>
+              ))}
+          </ul>
         </div>
+
+        {/* Call to Action Button */}
+        <button className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          View Cafe
+        </button>
       </div>
     </div>
   );

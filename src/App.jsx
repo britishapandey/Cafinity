@@ -12,6 +12,8 @@ import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
 import OwnerDashboard from './components/OwnerDashboard';
+import CafeCard from './components/CafeCard';
+import CafeForm from './components/CafeForm';
 
 
 function App() {
@@ -67,8 +69,6 @@ function App() {
       console.error(err);
     }
   };
-
-
 
   return (
     <div>
@@ -128,6 +128,10 @@ function App() {
           path="/business"
           element={<OwnerDashboard />}
           />
+
+        <Route 
+          path="/addcafe"
+          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
       </Routes>
 
 

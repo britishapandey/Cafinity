@@ -32,15 +32,6 @@ const Home = ({ user }) => {
       }
     }, [user]);
   
-    // Add a new cafe to Firebase
-    const onSubmitCafe = async (newCafe) => {
-      try {
-        await addDoc(cafesCollectionRef, newCafe);
-        getCafeList();
-      } catch (err) {
-        console.error(err);
-      }
-    };
 
     // hooks to use Google Maps API and its libraries in React
     // function to get user location
@@ -102,7 +93,7 @@ return(
             </APIProvider>
         </div>
         <CafeList cafes={cafeList} />
-        <CafeForm onSubmitCafe={onSubmitCafe} />        
+        {/* <CafeForm onSubmitCafe={onSubmitCafe} />         */}
     </>
 )
 }

@@ -2,7 +2,7 @@ import React from 'react';
 
 function CafeCard({ cafe }) {
   return (
-    <div className="max-w-sm w-full bg-white rounded-lg shadow-lg overflow-hidden m-4">
+    <div className="w-80 flex-shrink-0 bg-white rounded-lg shadow-lg overflow-auto no-scrollbar max-h-[22rem] m-4">
       {/* Cafe Image */}
       <img
         className="w-full h-48 object-cover"
@@ -24,16 +24,16 @@ function CafeCard({ cafe }) {
         <div className="flex items-center mb-4">
           <span className="text-yellow-500">★</span>
           <span className="ml-1 text-gray-800">{cafe.stars}</span>
-          <span className="ml-2 text-gray-600">({cafe.review_count} reviews)</span>
+          <span className="ml-2 text-gray-600">({cafe.review_count} reviews on Yelp)</span>
         </div>
 
         {/* Categories */}
-        <p className="text-gray-800 mb-4">
+        {/* <p className="text-gray-800 mb-4">
           <strong>Categories:</strong> {cafe.categories}
-        </p>
+        </p> */}
 
         {/* Amenities */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <p className="text-gray-800 font-medium mb-2">Amenities:</p>
           <ul className="list-disc list-inside text-gray-600">
             {cafe.attributes &&
@@ -43,7 +43,7 @@ function CafeCard({ cafe }) {
                 </li>
               ))}
           </ul>
-        </div>
+        </div> */}
 
         {/* Hours */}
         <div className="mb-4">

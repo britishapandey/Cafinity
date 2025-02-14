@@ -12,7 +12,7 @@ function CafeList({ cafes }) {
   return (
     <div>
       {/* Display the visible cafes */}
-      <div className="cafe-list flex flex-wrap justify-center">
+      <div className="cafe-list flex justify-start overflow-x-scroll no-scrollbar">
         {cafes.slice(0, visibleCafes).map((cafe) => (
           <CafeCard key={cafe.id || cafe.business_id} cafe={cafe} />
         ))}

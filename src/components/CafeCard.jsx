@@ -2,7 +2,7 @@ import React from 'react';
 
 function CafeCard({ cafe }) {
   return (
-    <div className="max-w-sm w-full bg-white rounded-lg shadow-lg overflow-hidden m-4">
+    <div className="w-80 flex-shrink-0 bg-white rounded-lg shadow-lg overflow-auto no-scrollbar max-h-[22rem] m-4">
       {/* Cafe Image */}
       <img
         className="w-full h-48 object-cover"

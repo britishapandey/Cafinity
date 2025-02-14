@@ -18,6 +18,7 @@ import CafeForm from './components/CafeForm';
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
+  const [userRole, setUserRole] = useState("user"); // State for user role
   const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
@@ -107,7 +108,8 @@ function App() {
         {/* Profile route - visible only to authenticated users */}
         <Route
           path="/profile"
-          element={user ? <Profile /> : <Navigate to="/login" />}
+          element={user ? 
+            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
         />
 
         <Route

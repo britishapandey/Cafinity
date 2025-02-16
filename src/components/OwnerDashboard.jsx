@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '../config/firebase';
-import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
+import { auth, db, storage } from '../config/firebase';
+import { doc, getDoc, setDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import CafeList from './CafeList';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const OwnerDashboard = () => {
   // currently borrowing from Profile.jsx + using CafeList component

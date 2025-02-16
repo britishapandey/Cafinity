@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 
 function CafeForm({ onSubmitCafe }) {
@@ -10,15 +8,22 @@ function CafeForm({ onSubmitCafe }) {
   const [newCafeState, setNewCafeState] = useState("");
   const [newCafePostalCode, setNewCafePostalCode] = useState("");
   const [newCafeRating, setNewCafeRating] = useState(0);
+  const [cafeCreditCard, setCafeCreditCard] = useState(false);
+  const [cafeBikeParking, setCafeBikeParking] = useState(false);
+  const [cafeNoiseLevel, setCafeNoiseLevel] = useState(false);
+  const [cafeGoodForGroups, setCafeGoodForGroups] = useState(false);
+  const [cafeOutdoorSeating, setCafeOutdoorSeating] = useState(false);
+  const [cafeDriveThru, setCafeDriveThru] = useState(false);
+  const [cafeWiFi, setCafeWiFi] = useState(false);
   const [newCafeAttributes, setNewCafeAttributes] = useState({
-    BusinessAcceptsCreditCards: "",
-    BikeParking: "",
+    BusinessAcceptsCreditCards: cafeCreditCard,
+    BikeParking: cafeBikeParking,
     // BusinessParking: "{'garage': False, 'street': False, 'validated': False, 'lot': False, 'valet': False}",
-    NoiseLevel: "",
-    RestaurantsGoodForGroups: "",
-    OutdoorSeating: "",
-    DriveThru: "",
-    WiFi: ""
+    NoiseLevel: cafeNoiseLevel,
+    RestaurantsGoodForGroups: cafeGoodForGroups,
+    OutdoorSeating: cafeOutdoorSeating,
+    DriveThru: cafeDriveThru,
+    WiFi: cafeWiFi
   });
   const [newCafeHours, setNewCafeHours] = useState({
     Friday: "",
@@ -62,8 +67,8 @@ function CafeForm({ onSubmitCafe }) {
     e.preventDefault();
 
     // Check if required fields are filled
-    if (!newCafeName || !newCafeAddress || newCafeRating === 0) {
-      alert("Please fill in the required fields (Cafe Name, Address, and Rating).");
+    if (!newCafeName || !newCafeAddress === 0) {
+      alert("Please fill in the required fields (Cafe Name and Address).");
       return;
     }
 
@@ -76,7 +81,7 @@ function CafeForm({ onSubmitCafe }) {
       stars: newCafeRating,
       amenities: newCafeAttributes,
       hours: newCafeHours, // default empty hours if not provided
-      images: newCafeImages.length > 0 ? newCafeImages : ['default-image-url'], // fallback to a default image URL if none are uploaded
+      images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'], // fallback to a default image URL if none are uploaded
     };
 
     onSubmitCafe(newCafe); // Submit the new cafe data
@@ -85,16 +90,13 @@ function CafeForm({ onSubmitCafe }) {
     setNewCafeName("");
     setNewCafeAddress("");
     setNewCafeRating(0);
-    setNewCafeAttributes({
-      BusinessAcceptsCreditCards: "",
-      BikeParking: "",
-      // BusinessParking: "{'garage': False, 'street': False, 'validated': False, 'lot': False, 'valet': False}",
-      NoiseLevel: "",
-      RestaurantsGoodForGroups: "",
-      OutdoorSeating: "",
-      DriveThru: "",
-      WiFi: ""
-    });
+    setCafeCreditCard(false);
+    setCafeBikeParking(false);
+    setCafeNoiseLevel(false);
+    setCafeGoodForGroups(false);
+    setCafeOutdoorSeating(false);
+    setCafeDriveThru(false);
+    setCafeWiFi(false);
     setNewCafeHours({
       Friday: "",
       Monday: "",
@@ -144,7 +146,7 @@ function CafeForm({ onSubmitCafe }) {
           <input
           id="cafe-postalcode"
           placeholder="Zip Code"
-          value={newCafeAddress}
+          value={newCafePostalCode}
           onChange={(e) => setNewCafePostalCode(e.target.value)}
           className="w-28"
           />
@@ -154,13 +156,20 @@ function CafeForm({ onSubmitCafe }) {
         <h4>Amenities</h4>
         <div>
           <FormGroup>
-            <FormControlLabel control={<Checkbox />} label="Accepts Credit Card"/>
-            <FormControlLabel control={<Checkbox />} label="Bike Parking" />
-            <FormControlLabel control={<Checkbox />} label="Quiet" />
-            <FormControlLabel control={<Checkbox />} label="Good for Groups" />
-            <FormControlLabel control={<Checkbox />} label="Outdoor Seating" />
-            <FormControlLabel control={<Checkbox />} label="Drive Thru" />
-            <FormControlLabel control={<Checkbox />} label="WiFi" />
+            <FormControlLabel control={<Checkbox />} label="Accepts Credit Card"
+              onChange={(e) => (setCafeCreditCard(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="Bike Parking"
+              onChange={(e) => (setCafeBikeParking(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="Quiet"
+              onChange={(e) => (setCafeNoiseLevel(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="Good for Groups"
+              onChange={(e) => (setCafeGoodForGroups(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="Outdoor Seating"
+              onChange={(e) => (setCafeOutdoorSeating(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="Drive Thru"
+              onChange={(e) => (setCafeDriveThru(e.target.checked))}/>
+            <FormControlLabel control={<Checkbox />} label="WiFi"
+              onChange={(e) => (setCafeWiFi(e.target.checked))}/>
           </FormGroup>
         </div>
       </div>

@@ -27,6 +27,8 @@ function CafeCard({ cafe }) {
           <span className="ml-2 text-gray-600">({cafe.review_count} reviews on Yelp)</span>
         </div>
 
+        {/* Below content is temporarily commented out while we fix UI & database */}
+
         {/* Categories */}
         {/* <p className="text-gray-800 mb-4">
           <strong>Categories:</strong> {cafe.categories}

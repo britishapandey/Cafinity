@@ -7,6 +7,7 @@ function SearchFilter({ onSearch }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    // FIXME: does not handle every attribute of a Cafe object yet
     onSearch({
       searchTerm,
       wifi,

@@ -10,6 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // regular email login
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -24,6 +25,7 @@ const Login = () => {
     }
   };
 
+  // handling google's sign in provider
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
@@ -99,6 +101,7 @@ const Login = () => {
           Register here
         </Link>
       </p>
+      {/* checking errors and displaying in red when necssary */}
       {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
     </div>
   );

@@ -18,6 +18,7 @@ function Profile({ setUserRole }) {
 
   const user = auth.currentUser;
 
+  // fetch profile data if user is logged in properly
   useEffect(() => {
     if (user) {
       initializeProfile();
@@ -27,6 +28,7 @@ function Profile({ setUserRole }) {
   const initializeProfile = async () => {
     setLoading(true);
     try {
+      // firebase profiles collection reference
       const userDocRef = doc(db, "profiles", user.uid);
       const userSnapshot = await getDoc(userDocRef);
 

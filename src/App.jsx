@@ -12,10 +12,13 @@ import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
 import CafeView from './components/CafeView';
+import CafeCard from './components/CafeCard';
+import CafeForm from './components/CafeForm';
 
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
+  const [userRole, setUserRole] = useState("user");
   const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
@@ -71,7 +74,12 @@ function App() {
 
 
   return (
+    
     <div>
+      <header>
+      {/* Pass the user state to the Navbar */}
+      <Navbar user={user} />
+      </header>
 
       <Routes>
         {/* Home route - visible only to authenticated users */}
@@ -137,7 +145,10 @@ function App() {
           path="/cafe/:cafeId"
           element={user ? <CafeView /> : <Navigate to="/login" />} 
         />
-
+        
+        <Route 
+          path="/addcafe"
+          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
       </Routes>
     </div>
   );

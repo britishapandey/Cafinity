@@ -130,7 +130,7 @@ const OwnerDashboard = () => {
                     className="w-24 h-24 rounded-full mx-auto mb-4"
                   />
                 )}
-                <p><strong>Business Owner:</strong> Justine Cruz</p>
+                <p><strong>Business Owner:</strong> {profileData.name}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEditToggle}>
                   Edit Profile

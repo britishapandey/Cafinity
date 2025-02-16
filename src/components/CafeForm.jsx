@@ -8,6 +8,8 @@ function CafeForm({ onSubmitCafe }) {
   const [newCafeState, setNewCafeState] = useState("");
   const [newCafePostalCode, setNewCafePostalCode] = useState("");
   const [newCafeRating, setNewCafeRating] = useState(0);
+  // Below states are part of specific cafe attributes
+  // TODO: Update them with all possible attributes in Yelp's schema
   const [cafeCreditCard, setCafeCreditCard] = useState(false);
   const [cafeBikeParking, setCafeBikeParking] = useState(false);
   const [cafeNoiseLevel, setCafeNoiseLevel] = useState(false);
@@ -155,6 +157,7 @@ function CafeForm({ onSubmitCafe }) {
       <div>
         <h4>Amenities</h4>
         <div>
+          {/* Quick checkbox form using MUI to handle amenities */}
           <FormGroup>
             <FormControlLabel control={<Checkbox />} label="Accepts Credit Card"
               onChange={(e) => (setCafeCreditCard(e.target.checked))}/>

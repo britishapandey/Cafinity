@@ -139,6 +139,7 @@ function App() {
           }
         />
 
+        {/* Cafe view route */}
         <Route
           path="/cafe/:id"
           element={

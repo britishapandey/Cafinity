@@ -118,8 +118,9 @@ const OwnerDashboard = () => {
 
     return(
         <>
-          <div className="max-w-md mx-auto mt-10 p-4 border rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Profile</h2>
+          <div className="flex">
+          <div className="max-w-[40vw] mx-auto mt-10 p-4 border rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Business Profile</h2>
             {!isEditing ? (
               <div>
                 {profileData.profilePicture && (
@@ -129,13 +130,13 @@ const OwnerDashboard = () => {
                     className="w-24 h-24 rounded-full mx-auto mb-4"
                   />
                 )}
-                <p><strong>Name:</strong> {profileData.name}</p>
+                <p><strong>Business Owner:</strong> Justine Cruz</p>
                 <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Role:</strong> {profileData.role}</p>
-                <p><strong>Bio:</strong> {profileData.bio}</p>
-                <p><strong>Preferences:</strong> {profileData.preferences}</p>
                 <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEditToggle}>
                   Edit Profile
+                </button>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEditToggle}>
+                  Manage Businesses
                 </button>
               </div>
             ) : (
@@ -146,7 +147,7 @@ const OwnerDashboard = () => {
                 </label>
                 <label>
                   Role:
-                  <select name="role" value={profileData.role} onChange={handleChange} className="border p-2 rounded w-full bg-white">
+                  <select name="role" value={"owner"} onChange={handleChange} className="border p-2 rounded w-full bg-white">
                     <option value="user">Regular User</option>
                     <option value="owner">Cafe Owner</option>
                   </select>
@@ -171,7 +172,13 @@ const OwnerDashboard = () => {
               </div>
             )}
           </div>
-          <CafeList cafes={cafeList}/>
+          <div className="max-w-[60vw] mt-10">
+            <h2 className="text-xl font-bold m-4">Your Cafes</h2>
+            <div>
+              <CafeList cafes={cafeList}/>
+            </div>
+          </div>
+          </div>
         </>
     )
 }

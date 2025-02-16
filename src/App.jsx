@@ -140,9 +140,12 @@ function App() {
         />
 
         <Route
-          path="/cafe/:cafeId"
+          path="/cafe/:id"
           element={
-            <CafeView cafes={filteredCafes}/> // HELP ME IDK HOW TO ONLY SEND ONE CAFE
+            <>
+            <CafeView/> 
+            <CafeList cafes={filteredCafes} />
+            </>
           } 
         />
 

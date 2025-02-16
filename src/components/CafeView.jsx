@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
+import { db, auth } from '../config/firebase';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 
-function CafeView({ cafes }) {
+function CafeView({ }) {
 
-  // idk how to put these two lines of logic in App.jsx so they are here
+  const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
+  const [cafeList, setCafeList] = useState([]); // State for cafe list
   const { id } = useParams();
-  var cafe = cafes.find((c) => c.id === id); // not currently working
+
+    // Fetch cafe list from Firebase
+    const getCafeList = async () => {
+    try {
+        const data = await getDocs(cafesCollectionRef);
+        const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        setCafeList(filteredData);
+    } catch (err) {
+        console.error(err);
+    }
+    };
+
+    getCafeList();
+
+//   console.log(cafeList);
+//   console.log(id);
+  var cafe = cafeList.find((c) => c.id === id); // not currently working
+
 
   // error handling logic (it is always an error rn)
   if (!cafe) return <h1>Cafe Not Found</h1>;

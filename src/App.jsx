@@ -4,21 +4,21 @@ import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
-import Login from './components/Login';
+import Login from './components/login';
 import Register from './components/Register';
 import Navbar from './components/NavBar'; // Updated NavBar import
 import './index.css';
 import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
-import CafeView from './components/CafeView';
+import OwnerDashboard from './components/OwnerDashboard';
 import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
 
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
-  const [userRole, setUserRole] = useState("user");
+  const [userRole, setUserRole] = useState("user"); // State for user role
   const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
@@ -71,10 +71,7 @@ function App() {
     }
   };
 
-
-
   return (
-    
     <div>
       <header>
       {/* Pass the user state to the Navbar */}
@@ -88,20 +85,6 @@ function App() {
           element={
             user ? (
               <>
-                {/* <div className="h-8">
-                  <APIProvider apiKey={API_KEY} onLoad={() => console.log('Google Maps API loaded')}>
-                  <Map
-                    style={{ borderRadius: "20px" }}
-                    defaultZoom={13}
-                    defaultCenter={{ lat: 37.7749, lng: -122.4194 }}
-                    gestureHandling={"greedy"}
-                  >
-
-                  </Map>
-                  </APIProvider>
-                </div>
-                <CafeList cafes={cafeList} />
-                <CafeForm onSubmitCafe={onSubmitCafe} /> */}
                 <Home user={user}/>
               </>
             ) : (
@@ -125,7 +108,8 @@ function App() {
         {/* Profile route - visible only to authenticated users */}
         <Route
           path="/profile"
-          element={user ? <Profile /> : <Navigate to="/login" />}
+          element={user ? 
+            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
         />
 
         <Route
@@ -141,15 +125,18 @@ function App() {
             )
           }
         />
-        {/* <Route
-          path="/cafe/:cafeId"
-          element={user ? <CafeView /> : <Navigate to="/login" />} 
-        />
-         */}
+
+        <Route
+          path="/business"
+          element={<OwnerDashboard />}
+          />
+
         <Route 
           path="/addcafe"
           element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
       </Routes>
+
+
     </div>
   );
 }

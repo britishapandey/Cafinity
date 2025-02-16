@@ -141,11 +141,11 @@ function App() {
             )
           }
         />
-        <Route
+        {/* <Route
           path="/cafe/:cafeId"
           element={user ? <CafeView /> : <Navigate to="/login" />} 
         />
-        
+         */}
         <Route 
           path="/addcafe"
           element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>

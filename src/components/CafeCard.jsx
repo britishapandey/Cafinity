@@ -6,7 +6,7 @@ function CafeCard({ cafe }) {
       {/* Cafe Image */}
       <img
         className="w-full h-48 object-cover"
-        src={cafe.image || '/path/to/local/placeholder.jpg'}
+        src={cafe.image || '/placeholder.png'}
         alt={`Cafe ${cafe.name}`}
       />
 

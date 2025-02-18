@@ -23,6 +23,9 @@ function App() {
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
 
+  const [isAuthLoading, setIsAuthLoading] = useState(true); // Add loading state for auth
+
+
   const getCafeList = async () => {
     try {
       const data = await getDocs(cafesCollectionRef);
@@ -42,6 +45,7 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setIsAuthLoading(false); // Set loading to false once we have the auth state
     });
     return unsubscribe; // Cleanup subscription
   }, []);
@@ -70,6 +74,17 @@ function App() {
       console.error(err);
     }
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6B7AEE]"></div>
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

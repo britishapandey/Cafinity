@@ -14,6 +14,7 @@ import CafeList from './components/CafeList'; // Import CafeList (if you have a 
 import OwnerDashboard from './components/OwnerDashboard';
 import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
+import CafeView from './components/CafeView'; 
 
 
 function App() {
@@ -134,6 +135,12 @@ function App() {
         <Route 
           path="/addcafe"
           element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+
+        <Route
+          path="/cafe/:cafeId"
+          element={user ? <CafeView /> : <Navigate to="/login" />}
+        />
+
       </Routes>
 
 

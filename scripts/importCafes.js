@@ -3,11 +3,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+//node importCafes.js
+
 // Convert the module URL to a file path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load the service account key
+// Load Firebase service account key
 const serviceAccount = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../config/serviceAccountKey.json'), 'utf8')
 );
@@ -19,14 +21,14 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// Read the cafes.json file
+// Read and parse cafes.json file
 const cafes = fs
-  .readFileSync(path.join(__dirname, '../data/cafes.json'), 'utf8')
+  .readFileSync(path.join(__dirname, '../data/cafes_ca.json'), 'utf8')
   .split('\n')
-  .filter(Boolean) // Remove empty lines
-  .map((line) => JSON.parse(line)); // Parse each line as JSON
+  .filter(Boolean)
+  .map((line) => JSON.parse(line));
 
-// Import data into Firestore
+// Import cafe data into Firestore
 async function importData() {
   for (const cafe of cafes) {
     try {

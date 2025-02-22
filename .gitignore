@@ -13,6 +13,7 @@ dist-ssr
 *.local
 *.env
 
+config/
 data
 
 # Ignore service account key

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function CafeCard({ cafe }) {
   const [showHours, setShowHours] = useState(false);
+  if (!cafe) return null;
+  const cafeId = cafe.id || cafe.cafeId; // Use cafeId from props or fallback to id
 
   const getColorFromName = (name) => {
     const colors = [
@@ -138,11 +141,13 @@ function CafeCard({ cafe }) {
       </div>
 
       {/* Fixed Button at Bottom */}
+      <Link to={`/cafe/${cafeId}`} className="block no-underline"> 
       <div className="p-4 border-t">
         <button className="w-full bg-[#6B7AEE] text-white px-4 py-2 rounded-lg hover:bg-[#5563d3] transition-colors">
           View Cafe
         </button>
       </div>
+      </Link>
     </div>
   );
 }

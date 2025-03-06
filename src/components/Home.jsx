@@ -105,7 +105,7 @@ const Home = ({ user }) => {
         </button>
         {sortOpen && (
           <div
-            className="flex flex-col"
+            className="flex flex-col z-10 ml-24"
             ref={sortRefs.setFloating}
             style={{
               ...sortFloatingStyles,
@@ -116,6 +116,13 @@ const Home = ({ user }) => {
             }}
             {...getSortFloatingProps()}>
               Sort Menu
+              <FormGroup>
+                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (A-Z)" />
+                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (Z-A)" />
+              </FormGroup>
+              <button>
+                Submit
+              </button>
             </div>
         )}
         <button 
@@ -144,6 +151,9 @@ const Home = ({ user }) => {
                 <FormControlLabel control={<Checkbox />} label="Drive Thru" onChange={(e) => setCafeDriveThru(e.target.checked)} />
                 <FormControlLabel control={<Checkbox />} label="WiFi" onChange={(e) => setCafeWiFi(e.target.checked)} />
               </FormGroup>
+              <button>
+                Submit
+              </button>
             </div>
           )}
           <div className="relative flex-1">

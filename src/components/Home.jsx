@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import CafeList from "./CafeList";
+import { ArrowUpDown, Filter } from "lucide-react";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -35,6 +36,23 @@ const Home = ({ user }) => {
     }
   }, [user]);
 
+  
+  const handleSearchSubmit = (filters) => {
+    const term = filters.searchTerm.toLowerCase();
+    let tempFilteredCafes = [...cafeList];
+
+    if (term) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.name.toLowerCase().includes(term));
+    }
+
+    if (filters.wifi || filters.powerOutlets) { // Using wifi for both filters for now
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.amenities && cafe.amenities.wifi === true); // Filter for wifi: true
+    }
+
+    setFilteredCafes(tempFilteredCafes);
+  };
+
+
   useEffect(() => {
     const filtered = cafeList.filter((cafe) =>
       cafe.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -44,30 +62,36 @@ const Home = ({ user }) => {
 
   return (
     <>
-      <div className="my-4 px-4 flex gap-4 items-center">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search cafes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
+        <div className="my-4 px-4 flex gap-2 items-center w-full">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search cafes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+          </div>
+        <button className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <ArrowUpDown />
+        </button>
+        <button className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <Filter />
+        </button>
         <button
           onClick={() => setShowMap(!showMap)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"

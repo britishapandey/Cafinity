@@ -3,6 +3,7 @@ import { db } from "../config/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import CafeList from "./CafeList";
 import { ArrowUpDown, Filter } from "lucide-react";
+import { useFloating, useMergeRefs, useInteractions, useClick, useDismiss } from "@floating-ui/react";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -10,6 +11,39 @@ const Home = ({ user }) => {
   const [filteredCafes, setFilteredCafes] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  // toggle sort menu open
+  const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const {
+    refs: sortRefs,
+    floatingStyles: sortFloatingStyles,
+    context: sortContext
+  } = useFloating({
+    open: sortOpen,
+    onOpenChange: setSortOpen,
+  });
+  const {
+    refs: filterRefs,
+    floatingStyles: filterFloatingStyles,
+    context: filterContext
+  } = useFloating({
+    open: filterOpen,
+    onOpenChange: setFilterOpen,
+  });
+  const {
+    getReferenceProps: getSortReferenceProps,
+    getFloatingProps: getSortFloatingProps
+  } = useInteractions([useClick(sortContext), useDismiss(sortContext)]);
+  const {
+    getReferenceProps: getFilterReferenceProps,
+    getFloatingProps: getFilterFloatingProps
+  } = useInteractions([useClick(filterContext), useDismiss(filterContext)]);
+  // const ref = useMergeRefs([sortRefs.setReference, filterRefs.setReference]);
+  const sortRef = sortRefs.setReference;
+  const filterRef = filterRefs.setReference;
+  const sortProps = getSortReferenceProps();
+  const filterProps = getFilterReferenceProps();
+  // const Props = getSortReferenceProps(getFilterReferenceProps());
 
   const cafesCollectionRef = collection(db, "cafes");
 
@@ -63,6 +97,44 @@ const Home = ({ user }) => {
   return (
     <>
         <div className="my-4 px-4 flex gap-2 items-center w-full">
+        <button 
+          ref={sortRef} {...sortProps}
+          className="z-10 px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <ArrowUpDown />
+        </button>
+        {sortOpen && (
+          <div
+            ref={sortRefs.setFloating}
+            style={{
+              ...sortFloatingStyles,
+              background: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "0.5rem",
+            }}
+            {...getSortFloatingProps()}>
+              Sort Menu
+            </div>
+        )}
+        <button 
+          ref={filterRef} {...filterProps}
+          className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <Filter />
+        </button>
+        {filterOpen && (
+          <div
+            ref={filterRefs.setFloating}
+            style={{
+              ...filterFloatingStyles,
+              background: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "0.5rem",
+            }}
+            {...getFilterFloatingProps()}>
+              Filter Menu
+            </div>
+          )}
           <div className="relative flex-1">
             <input
               type="text"
@@ -86,12 +158,6 @@ const Home = ({ user }) => {
               ></path>
             </svg>
           </div>
-        <button className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
-          <ArrowUpDown />
-        </button>
-        <button className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
-          <Filter />
-        </button>
         <button
           onClick={() => setShowMap(!showMap)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -143,7 +209,7 @@ const Home = ({ user }) => {
           </div>
         </div>
       ) : (
-        <CafeList cafes={filteredCafes} showMap={showMap} />
+        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} />
       )}
     </>
   );

@@ -4,6 +4,7 @@ import { collection, getDocs } from "firebase/firestore";
 import CafeList from "./CafeList";
 import { ArrowUpDown, Filter } from "lucide-react";
 import { useFloating, useMergeRefs, useInteractions, useClick, useDismiss } from "@floating-ui/react";
+import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -104,6 +105,7 @@ const Home = ({ user }) => {
         </button>
         {sortOpen && (
           <div
+            className="flex flex-col"
             ref={sortRefs.setFloating}
             style={{
               ...sortFloatingStyles,
@@ -123,6 +125,7 @@ const Home = ({ user }) => {
         </button>
         {filterOpen && (
           <div
+            className="flex flex-col z-10"
             ref={filterRefs.setFloating}
             style={{
               ...filterFloatingStyles,
@@ -132,7 +135,15 @@ const Home = ({ user }) => {
               padding: "0.5rem",
             }}
             {...getFilterFloatingProps()}>
-              Filter Menu
+              <FormGroup className="grid grid-cols-2">
+                <FormControlLabel control={<Checkbox />} label="Accepts Credit Card" onChange={(e) => setCafeCreditCard(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="Bike Parking" onChange={(e) => setCafeBikeParking(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="Quiet" onChange={(e) => setCafeNoiseLevel(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="Good for Groups" onChange={(e) => setCafeGoodForGroups(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="Outdoor Seating" onChange={(e) => setCafeOutdoorSeating(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="Drive Thru" onChange={(e) => setCafeDriveThru(e.target.checked)} />
+                <FormControlLabel control={<Checkbox />} label="WiFi" onChange={(e) => setCafeWiFi(e.target.checked)} />
+              </FormGroup>
             </div>
           )}
           <div className="relative flex-1">

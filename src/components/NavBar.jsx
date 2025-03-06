@@ -23,9 +23,6 @@ const Navbar = ({ user, userRole }) => {
           <Link to="/profile" className="m-4 flex items-center">
             <User color="#6490E1" />
           </Link>
-          <Link to="/search" className="m-4 flex items-center">
-            <Search color="#6490E1" />
-          </Link>
           <Link to="/addcafe" className="m-4 flex items-center">
             <CirclePlus color="#6490E1" />
           </Link>

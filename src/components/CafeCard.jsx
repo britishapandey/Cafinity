@@ -143,7 +143,7 @@ function CafeCard({ cafe }) {
       {/* Fixed Button at Bottom */}
       <Link to={`/cafe/${cafeId}`} className="block no-underline"> 
       <div className="p-4 border-t">
-        <button className="w-full bg-[#6B7AEE] text-white px-4 py-2 rounded-lg hover:bg-[#5563d3] transition-colors">
+        <button className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors">
           View Cafe
         </button>
       </div>

@@ -15,6 +15,13 @@ const Home = ({ user }) => {
   // toggle sort menu open
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [cafeCreditCard, setCafeCreditCard] = useState(false);
+  const [cafeBikeParking, setCafeBikeParking] = useState(false);
+  const [cafeNoiseLevel, setCafeNoiseLevel] = useState(false);
+  const [cafeGoodForGroups, setCafeGoodForGroups] = useState(false);
+  const [cafeOutdoorSeating, setCafeOutdoorSeating] = useState(false);
+  const [cafeDriveThru, setCafeDriveThru] = useState(false);
+  const [cafeWiFi, setCafeWiFi] = useState(false);
   const {
     refs: sortRefs,
     floatingStyles: sortFloatingStyles,
@@ -79,9 +86,27 @@ const Home = ({ user }) => {
     if (term) {
       tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.name.toLowerCase().includes(term));
     }
-
+    
+    if (filters.creditCard) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.BusinessAcceptsCreditCards === true);
+    }
+    if (filters.bikeParking) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.BikeParking === true);
+    }
+    if (filters.noiseLevel) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.NoiseLevel === true);
+    }
+    if (filters.goodForGroups) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.RestaurantsGoodForGroups === true);
+    }
+    if (filters.outdoorSeating) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.OutdoorSeating === true);
+    }
+    if (filters.driveThru) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes.DriveThru === true);
+    }
     if (filters.wifi || filters.powerOutlets) { // Using wifi for both filters for now
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.amenities && cafe.amenities.wifi === true); // Filter for wifi: true
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes && cafe.attributes.wifi === true); // Filter for wifi: true
     }
 
     setFilteredCafes(tempFilteredCafes);
@@ -142,18 +167,78 @@ const Home = ({ user }) => {
               padding: "0.5rem",
             }}
             {...getFilterFloatingProps()}>
-              <FormGroup className="grid grid-cols-2">
-                <FormControlLabel control={<Checkbox />} label="Accepts Credit Card" onChange={(e) => setCafeCreditCard(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="Bike Parking" onChange={(e) => setCafeBikeParking(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="Quiet" onChange={(e) => setCafeNoiseLevel(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="Good for Groups" onChange={(e) => setCafeGoodForGroups(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="Outdoor Seating" onChange={(e) => setCafeOutdoorSeating(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="Drive Thru" onChange={(e) => setCafeDriveThru(e.target.checked)} />
-                <FormControlLabel control={<Checkbox />} label="WiFi" onChange={(e) => setCafeWiFi(e.target.checked)} />
-              </FormGroup>
-              <button>
+              <form onSubmit={(e) => {e.preventDefault();
+              handleSearchSubmit({ searchTerm,
+                creditCard: cafeCreditCard,
+                bikeParking: cafeBikeParking,
+                noiseLevel: cafeNoiseLevel,
+                goodForGroups: cafeGoodForGroups,
+                outdoorSeating: cafeOutdoorSeating,
+                driveThru: cafeDriveThru,
+                wifi: cafeWiFi })}}>
+              <div className="flex flex-col">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeCreditCard}
+                    onChange={(e) => setCafeCreditCard(e.target.checked)}
+                  />
+                  Accepts Credit Card
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeBikeParking}
+                    onChange={(e) => setCafeBikeParking(e.target.checked)}
+                  />
+                  Bike Parking
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeNoiseLevel}
+                    onChange={(e) => setCafeNoiseLevel(e.target.checked)}
+                  />
+                  Quiet
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeGoodForGroups}
+                    onChange={(e) => setCafeGoodForGroups(e.target.checked)}
+                  />
+                  Good for Groups
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeOutdoorSeating}
+                    onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
+                  />
+                  Outdoor Seating
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeDriveThru}
+                    onChange={(e) => setCafeDriveThru(e.target.checked)}
+                  />
+                  Drive Thru
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeWiFi}
+                    onChange={(e) => setCafeWiFi(e.target.checked)}
+                  />
+                  WiFi
+                </label>
+              </div>
+
+              <button type="submit">
                 Submit
               </button>
+              </form>
             </div>
           )}
           <div className="relative flex-1">

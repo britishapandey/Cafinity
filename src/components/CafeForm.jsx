@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 
-function CafeForm({ onSubmitCafe }) {
+function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");
   const [newCafeAddress, setNewCafeAddress] = useState("");
   const [newCafeState, setNewCafeState] = useState("");
@@ -22,22 +22,42 @@ function CafeForm({ onSubmitCafe }) {
     RestaurantsGoodForGroups: cafeGoodForGroups,
     OutdoorSeating: cafeOutdoorSeating,
     DriveThru: cafeDriveThru,
-    WiFi: cafeWiFi
+    WiFi: cafeWiFi,
   });
   const [newCafeHours, setNewCafeHours] = useState({
-    Friday: "",
-    Monday: "",
-    Saturday: "",
-    Sunday: "",
-    Thursday: "",
-    Tuesday: "",
-    Wednesday: "",
+    Friday: { open: "", close: "" },
+    Monday: { open: "", close: "" },
+    Saturday: { open: "", close: "" },
+    Sunday: { open: "", close: "" },
+    Thursday: { open: "", close: "" },
+    Tuesday: { open: "", close: "" },
+    Wednesday: { open: "", close: "" },
   });
   const [newCafeImages, setNewCafeImages] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
-  const [imageFile, setImageFile] = useState(null);
 
   const daysOfWeek = ["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"];
+
+  // Sync newCafeAttributes with checkbox states
+  useEffect(() => {
+    setNewCafeAttributes({
+      BusinessAcceptsCreditCards: cafeCreditCard,
+      BikeParking: cafeBikeParking,
+      NoiseLevel: cafeNoiseLevel,
+      RestaurantsGoodForGroups: cafeGoodForGroups,
+      OutdoorSeating: cafeOutdoorSeating,
+      DriveThru: cafeDriveThru,
+      WiFi: cafeWiFi,
+    });
+  }, [
+    cafeCreditCard,
+    cafeBikeParking,
+    cafeNoiseLevel,
+    cafeGoodForGroups,
+    cafeOutdoorSeating,
+    cafeDriveThru,
+    cafeWiFi,
+  ]);
 
   const handleImageUrl = () => {
     if (imageUrl) {
@@ -68,6 +88,13 @@ function CafeForm({ onSubmitCafe }) {
       return;
     }
 
+    // Format hours into 'open-close' string
+    const formattedHours = {};
+    for (const day in newCafeHours) {
+      const { open, close } = newCafeHours[day];
+      formattedHours[day] = open && close ? `${open}-${close}` : "";
+    }
+
     const newCafe = {
       name: newCafeName,
       address: newCafeAddress,
@@ -75,14 +102,17 @@ function CafeForm({ onSubmitCafe }) {
       postal_code: newCafePostalCode,
       stars: newCafeRating,
       amenities: newCafeAttributes,
-      hours: newCafeHours,
+      hours: formattedHours,
       images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'],
     };
 
     onSubmitCafe(newCafe);
 
+    // Reset form
     setNewCafeName("");
     setNewCafeAddress("");
+    setNewCafeState("");
+    setNewCafePostalCode("");
     setNewCafeRating(0);
     setCafeCreditCard(false);
     setCafeBikeParking(false);
@@ -92,17 +122,16 @@ function CafeForm({ onSubmitCafe }) {
     setCafeDriveThru(false);
     setCafeWiFi(false);
     setNewCafeHours({
-      Friday: "",
-      Monday: "",
-      Saturday: "",
-      Sunday: "",
-      Thursday: "",
-      Tuesday: "",
-      Wednesday: "",
+      Friday: { open: "", close: "" },
+      Monday: { open: "", close: "" },
+      Saturday: { open: "", close: "" },
+      Sunday: { open: "", close: "" },
+      Thursday: { open: "", close: "" },
+      Tuesday: { open: "", close: "" },
+      Wednesday: { open: "", close: "" },
     });
     setNewCafeImages([]);
     setImageUrl("");
-    setImageFile(null);
   };
 
   return (
@@ -147,13 +176,41 @@ function CafeForm({ onSubmitCafe }) {
         <div>
           <h4 className="text-lg font-semibold mb-4">Amenities</h4>
           <FormGroup className="grid grid-cols-2 gap-4">
-            <FormControlLabel control={<Checkbox />} label="Accepts Credit Card" onChange={(e) => setCafeCreditCard(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="Bike Parking" onChange={(e) => setCafeBikeParking(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="Quiet" onChange={(e) => setCafeNoiseLevel(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="Good for Groups" onChange={(e) => setCafeGoodForGroups(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="Outdoor Seating" onChange={(e) => setCafeOutdoorSeating(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="Drive Thru" onChange={(e) => setCafeDriveThru(e.target.checked)} />
-            <FormControlLabel control={<Checkbox />} label="WiFi" onChange={(e) => setCafeWiFi(e.target.checked)} />
+            <FormControlLabel
+              control={<Checkbox checked={cafeCreditCard} />}
+              label="Accepts Credit Card"
+              onChange={(e) => setCafeCreditCard(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeBikeParking} />}
+              label="Bike Parking"
+              onChange={(e) => setCafeBikeParking(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeNoiseLevel} />}
+              label="Quiet"
+              onChange={(e) => setCafeNoiseLevel(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeGoodForGroups} />}
+              label="Good for Groups"
+              onChange={(e) => setCafeGoodForGroups(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeOutdoorSeating} />}
+              label="Outdoor Seating"
+              onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeDriveThru} />}
+              label="Drive Thru"
+              onChange={(e) => setCafeDriveThru(e.target.checked)}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={cafeWiFi} />}
+              label="WiFi"
+              onChange={(e) => setCafeWiFi(e.target.checked)}
+            />
           </FormGroup>
         </div>
 
@@ -165,15 +222,25 @@ function CafeForm({ onSubmitCafe }) {
               <input
                 type="time"
                 placeholder="Open"
-                value={newCafeHours[day]}
-                onChange={(e) => setNewCafeHours({ ...newCafeHours, [day]: e.target.value })}
+                value={newCafeHours[day].open}
+                onChange={(e) =>
+                  setNewCafeHours({
+                    ...newCafeHours,
+                    [day]: { ...newCafeHours[day], open: e.target.value },
+                  })
+                }
                 className="col-span-1 p-2 border rounded"
               />
               <input
                 type="time"
                 placeholder="Close"
-                value={newCafeHours[day]}
-                onChange={(e) => setNewCafeHours({ ...newCafeHours, [day]: e.target.value })}
+                value={newCafeHours[day].close}
+                onChange={(e) =>
+                  setNewCafeHours({
+                    ...newCafeHours,
+                    [day]: { ...newCafeHours[day], close: e.target.value },
+                  })
+                }
                 className="col-span-1 p-2 border rounded"
               />
             </div>

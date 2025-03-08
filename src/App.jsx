@@ -14,8 +14,8 @@ import CafeList from './components/CafeList'; // Import CafeList (if you have a 
 import OwnerDashboard from './components/OwnerDashboard';
 import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
-import CafeView from './components/CafeView'; 
-
+import CafeView from './components/CafeView';
+import CafeRecommender from './components/CafeRecommender'; // Import CafeRecommender
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
@@ -25,7 +25,6 @@ function App() {
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
 
   const [isAuthLoading, setIsAuthLoading] = useState(true); // Add loading state for auth
-
 
   const getCafeList = async () => {
     try {
@@ -37,10 +36,10 @@ function App() {
       console.error(err);
     }
   };
+
   useEffect(() => {
     getCafeList(); // Fetch data on initial load
-  }, []); 
-
+  }, []);
 
   // Monitor user authentication state
   useEffect(() => {
@@ -66,7 +65,6 @@ function App() {
     setFilteredCafes(tempFilteredCafes);
   };
 
-
   const onSubmitCafe = async (newCafe) => {
     try {
       await addDoc(cafesCollectionRef, newCafe);
@@ -90,8 +88,8 @@ function App() {
   return (
     <div>
       <header>
-      {/* Pass the user state to the Navbar */}
-      <Navbar user={user} />
+        {/* Pass the user state to the Navbar */}
+        <Navbar user={user} />
       </header>
 
       <Routes>
@@ -101,7 +99,7 @@ function App() {
           element={
             user ? (
               <>
-                <Home user={user}/>
+                <Home user={user} />
               </>
             ) : (
               <Navigate to="/login" />
@@ -124,10 +122,10 @@ function App() {
         {/* Profile route - visible only to authenticated users */}
         <Route
           path="/profile"
-          element={user ? 
-            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+          element={user ? <Profile setUserRole={setUserRole} /> : <Navigate to="/login" />}
         />
 
+        {/* Search route */}
         <Route
           path="/search"
           element={
@@ -142,23 +140,27 @@ function App() {
           }
         />
 
+        {/* New CafeRecommender route */}
+        <Route
+          path="/caferecommender"
+          element={user ? <CafeRecommender /> : <Navigate to="/login" />}
+        />
+
         <Route
           path="/business"
           element={<OwnerDashboard />}
-          />
+        />
 
         <Route 
           path="/addcafe"
-          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+          element={<CafeForm onSubmitCafe={onSubmitCafe} />}
+        />
 
         <Route
           path="/cafe/:cafeId"
           element={user ? <CafeView /> : <Navigate to="/login" />}
         />
-
       </Routes>
-
-
     </div>
   );
 }

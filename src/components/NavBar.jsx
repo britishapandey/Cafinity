@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Star, User, Search, Settings, CirclePlus } from "lucide-react"; // Added Settings icon for admin/owner
+import { Home, Star, User, Search, Settings, CirclePlus } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 
@@ -26,17 +26,18 @@ const Navbar = ({ user, userRole }) => {
           <Link to="/addcafe" className="m-4 flex items-center">
             <CirclePlus color="#6490E1" />
           </Link>
+          {/* New Navbar entry for CafeRecommender */}
+          <Link to="/caferecommender" className="m-4 flex items-center">
+            <Search color="#6490E1" />
+          </Link>
           {/* Show additional options for cafe owners */}
           {userRole === "owner" && (
             <Link to="/owner-dashboard" className="m-4 flex items-center">
-              <Settings color="#6490E1" /> {/* Example: Settings icon for owner dashboard */}
+              <Settings color="#6490E1" />
             </Link>
           )}
           {user ? (
-            <button
-              onClick={handleSignOut}
-              className="m-4 text-white flex items-center"
-            >
+            <button onClick={handleSignOut} className="m-4 text-white flex items-center">
               Sign Out
             </button>
           ) : (

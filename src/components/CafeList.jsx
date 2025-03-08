@@ -5,9 +5,11 @@ import {
   Map,
   useMap,
   useMapsLibrary,
+  AdvancedMarker,
 } from "@vis.gl/react-google-maps";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const MAP_ID = import.meta.env.VITE_GOOGLE_MAP_ID;
 
 function CafeList({ cafes, showMap }) {
   const cafesPerPage = 50;
@@ -123,20 +125,29 @@ function CafeList({ cafes, showMap }) {
         <div className="w-[400px] h-screen">
           <APIProvider
             apiKey={API_KEY}
+            libraries={["marker"]} // Add "marker" library for AdvancedMarkerElement
             onLoad={() => console.log("Google Maps API loaded")}
           >
             <Map
               style={{ height: "100%", borderRadius: "20px" }}
               defaultZoom={13}
-              defaultCenter={{ lat: 34.0522, lng: -118.2437 }}
+              defaultCenter={{ lat: 34.0522, lng: -118.2437 }} // Default center (e.g., Los Angeles)
               gestureHandling={"greedy"}
+              mapId={MAP_ID} //apply map id
             >
               <GetLocation />
+              {/* Render AdvancedMarkers for each cafe on the current page */}
+              {currentCafes.map((cafe) => (
+                <AdvancedMarker
+                  key={cafe.id || cafe.business_id}
+                  position={{ lat: cafe.latitude, lng: cafe.longitude }}
+                  title={cafe.name} // Tooltip on hover
+                />
+              ))}
             </Map>
           </APIProvider>
         </div>
       )}
-
       {/* Pagination */}
       <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
         <div className="flex justify-center items-center gap-2">

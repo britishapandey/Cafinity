@@ -6,6 +6,28 @@ function CafeCard({ cafe }) {
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId; // Use cafeId from props or fallback to id
 
+  const formatHours = (hoursString) => {
+    if (!hoursString || typeof hoursString !== 'string') return 'Closed';
+
+    //split the range (ex "16:30-21:0" -> ["16:30", "21:0"])
+    const [start, end] = hoursString.split('-');
+
+    const formatTime = (time) => {
+      // handle cases like "8:0" by adding "0" if needed
+      const [hours, minutes] = time.split(':');
+      const hourNum = parseInt(hours)
+      const minNum = parseInt(minutes) || 0;
+
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const hour12 = hourNum % 12 || 12; // conver to 12hour format
+      const minuteStr = minNum < 10 ? `0${minNum}` : minNum;
+
+      return `${hour12}:${minuteStr}${period}`;
+    };
+
+    return `${formatTime(start)}-${formatTime(end)}`;
+  };
+  
   const getColorFromName = (name) => {
     const colors = [
       "bg-[#FF6B6B]",
@@ -130,7 +152,7 @@ function CafeCard({ cafe }) {
                   {Object.entries(cafe.hours).map(([day, hours]) => (
                     <div key={day} className="flex justify-between py-1">
                       <span className="font-medium">{day}:</span>
-                      <span>{hours}</span>
+                      <span>{formatHours(hours)}</span>
                     </div>
                   ))}
                 </div>

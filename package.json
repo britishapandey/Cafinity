@@ -23,6 +23,7 @@
     "geolocation": "^0.2.0",
     "lucide-react": "^0.468.0",
     "mui": "^0.0.1",
+    "openai": "^4.86.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-horizontal-scrolling-menu": "^8.2.0",

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import CafeList from "./CafeList";
+import { ArrowUpDown, Filter } from "lucide-react";
+import { useFloating, useMergeRefs, useInteractions, useClick, useDismiss } from "@floating-ui/react";
+import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -9,6 +12,46 @@ const Home = ({ user }) => {
   const [filteredCafes, setFilteredCafes] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  // toggle sort menu open
+  const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [cafeCreditCard, setCafeCreditCard] = useState(false);
+  const [cafeBikeParking, setCafeBikeParking] = useState(false);
+  const [cafeNoiseLevel, setCafeNoiseLevel] = useState(false);
+  const [cafeGoodForGroups, setCafeGoodForGroups] = useState(false);
+  const [cafeOutdoorSeating, setCafeOutdoorSeating] = useState(false);
+  const [cafeDriveThru, setCafeDriveThru] = useState(false);
+  const [cafeWiFi, setCafeWiFi] = useState(false);
+  const {
+    refs: sortRefs,
+    floatingStyles: sortFloatingStyles,
+    context: sortContext
+  } = useFloating({
+    open: sortOpen,
+    onOpenChange: setSortOpen,
+  });
+  const {
+    refs: filterRefs,
+    floatingStyles: filterFloatingStyles,
+    context: filterContext
+  } = useFloating({
+    open: filterOpen,
+    onOpenChange: setFilterOpen,
+  });
+  const {
+    getReferenceProps: getSortReferenceProps,
+    getFloatingProps: getSortFloatingProps
+  } = useInteractions([useClick(sortContext), useDismiss(sortContext)]);
+  const {
+    getReferenceProps: getFilterReferenceProps,
+    getFloatingProps: getFilterFloatingProps
+  } = useInteractions([useClick(filterContext), useDismiss(filterContext)]);
+  // const ref = useMergeRefs([sortRefs.setReference, filterRefs.setReference]);
+  const sortRef = sortRefs.setReference;
+  const filterRef = filterRefs.setReference;
+  const sortProps = getSortReferenceProps();
+  const filterProps = getFilterReferenceProps();
+  // const Props = getSortReferenceProps(getFilterReferenceProps());
 
   const cafesCollectionRef = collection(db, "cafes");
 
@@ -35,6 +78,41 @@ const Home = ({ user }) => {
     }
   }, [user]);
 
+  
+  const handleSearchSubmit = (filters) => {
+    const term = filters.searchTerm.toLowerCase();
+    let tempFilteredCafes = [...cafeList];
+
+    if (term) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.name.toLowerCase().includes(term));
+    }
+    
+    if (filters.creditCard) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BusinessAcceptsCreditCards !== undefined);
+    }
+    if (filters.bikeParking) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BikeParking !== undefined);
+    }
+    if (filters.noiseLevel) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.NoiseLevel !== undefined);
+    }
+    if (filters.goodForGroups) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.RestaurantsGoodForGroups !== undefined);
+    }
+    if (filters.outdoorSeating) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.OutdoorSeating !== undefined);
+    }
+    if (filters.driveThru) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru !== undefined);
+    }
+    if (filters.wifi) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi !== undefined);
+    }
+
+    setFilteredCafes(tempFilteredCafes);
+  };
+
+
   useEffect(() => {
     const filtered = cafeList.filter((cafe) =>
       cafe.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -44,30 +122,148 @@ const Home = ({ user }) => {
 
   return (
     <>
-      <div className="my-4 px-4 flex gap-4 items-center">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search cafes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
+        <div className="my-4 px-4 flex gap-2 items-center w-full">
+        <button 
+          ref={sortRef} {...sortProps}
+          className="z-10 px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <ArrowUpDown />
+        </button>
+        {sortOpen && (
+          <div
+            className="flex flex-col z-10 ml-24"
+            ref={sortRefs.setFloating}
+            style={{
+              ...sortFloatingStyles,
+              background: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "0.5rem",
+            }}
+            {...getSortFloatingProps()}>
+              Sort Menu
+              <FormGroup>
+                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (A-Z)" />
+                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (Z-A)" />
+              </FormGroup>
+              <button>
+                Submit
+              </button>
+            </div>
+        )}
+        <button 
+          ref={filterRef} {...filterProps}
+          className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          <Filter />
+        </button>
+        {filterOpen && (
+          <div
+            className="flex flex-col z-10"
+            ref={filterRefs.setFloating}
+            style={{
+              ...filterFloatingStyles,
+              background: "white",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "0.5rem",
+            }}
+            {...getFilterFloatingProps()}>
+              <form onSubmit={(e) => {e.preventDefault();
+              handleSearchSubmit({ searchTerm,
+                creditCard: cafeCreditCard,
+                bikeParking: cafeBikeParking,
+                noiseLevel: cafeNoiseLevel,
+                goodForGroups: cafeGoodForGroups,
+                outdoorSeating: cafeOutdoorSeating,
+                driveThru: cafeDriveThru,
+                wifi: cafeWiFi })}}>
+              <div className="flex flex-col">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeCreditCard}
+                    onChange={(e) => setCafeCreditCard(e.target.checked)}
+                  />
+                  Accepts Credit Card
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeBikeParking}
+                    onChange={(e) => setCafeBikeParking(e.target.checked)}
+                  />
+                  Bike Parking
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeNoiseLevel}
+                    onChange={(e) => setCafeNoiseLevel(e.target.checked)}
+                  />
+                  Quiet
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeGoodForGroups}
+                    onChange={(e) => setCafeGoodForGroups(e.target.checked)}
+                  />
+                  Good for Groups
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeOutdoorSeating}
+                    onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
+                  />
+                  Outdoor Seating
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeDriveThru}
+                    onChange={(e) => setCafeDriveThru(e.target.checked)}
+                  />
+                  Drive Thru
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={cafeWiFi}
+                    onChange={(e) => setCafeWiFi(e.target.checked)}
+                  />
+                  WiFi
+                </label>
+              </div>
+
+              <button type="submit">
+                Submit
+              </button>
+              </form>
+            </div>
+          )}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search cafes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+          </div>
         <button
           onClick={() => setShowMap(!showMap)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -119,7 +315,7 @@ const Home = ({ user }) => {
           </div>
         </div>
       ) : (
-        <CafeList cafes={filteredCafes} showMap={showMap} />
+        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} />
       )}
     </>
   );

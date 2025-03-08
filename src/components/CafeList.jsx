@@ -105,7 +105,7 @@ function CafeList({ cafes, showMap }) {
     }
   };
 
-  const pageNumbers = getPageNumbers();
+  const pageNumbers = (window.innerWidth > 768)? getPageNumbers() : getPageNumbers().slice(0, 3).concat("...").concat(totalPages);
 
   return (
     <div className="flex flex-row h-screen relative pb-20 gap-4">

@@ -44,6 +44,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
+  color: white;
   background-color: #B07242;
   cursor: pointer;
   margin: 0.6em;
@@ -83,6 +84,18 @@ input {
 
 input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(0.5) sepia(1) saturate(5) hue-rotate(12deg);
+}
+
+textarea {
+  color: #5B4A43;
+  background: transparent;
+  border: 2px solid #5B4A43;
+}
+
+select {
+  color: #5B4A43;
+  background: transparent;
+  border: 2px solid #5B4A43;
 }
 
 input[type="time"] {

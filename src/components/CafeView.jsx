@@ -69,7 +69,28 @@ function CafeView({ }) {
 
   }, []); // empty dependency array → runs once when component mounts
 
-  
+  const formatHours = (hoursString) => {
+    if (!hoursString || typeof hoursString !== 'string') return 'Closed';
+
+    //split the range (ex "16:30-21:0" -> ["16:30", "21:0"])
+    const [start, end] = hoursString.split('-');
+
+    const formatTime = (time) => {
+      // handle cases like "8:0" by adding "0" if needed
+      const [hours, minutes] = time.split(':');
+      const hourNum = parseInt(hours)
+      const minNum = parseInt(minutes) || 0;
+
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const hour12 = hourNum % 12 || 12; // conver to 12hour format
+      const minuteStr = minNum < 10 ? `0${minNum}` : minNum;
+
+      return `${hour12}:${minuteStr}${period}`;
+    };
+
+    return `${formatTime(start)}-${formatTime(end)}`;
+  };
+
   // big main merge:
   // const handleBack = () => {
   //   navigate(-1); // Go back to previous page
@@ -220,7 +241,7 @@ function CafeView({ }) {
           {cafe.hours &&
           Object.entries(cafe.hours).map(([day, hours]) => (
               <li key={day}>
-              <strong>{day}:</strong> {hours}
+              <strong>{day}:</strong> {formatHours(hours)}
               </li>
           ))}
       </ul>

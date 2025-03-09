@@ -5,6 +5,7 @@ import { auth, db, googleProvider } from "../config/firebase";
 import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
+  // state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -65,6 +66,7 @@ const Register = () => {
     }
   };
 
+  // basic form to handle user input and registration
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-[#FAF8F5]">
       <h1 className="text-4xl font-bold mb-6">Join the Cafinity community!</h1>

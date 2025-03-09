@@ -145,7 +145,7 @@ function App() {
           element={
             <>
             <CafeView/> 
-            <CafeList cafes={filteredCafes} />
+            
             </>
           } 
         />

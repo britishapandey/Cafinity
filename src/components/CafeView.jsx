@@ -20,13 +20,14 @@ function CafeView({ }) {
             console.error(err);
         }
         };
-
         getCafeList();
     }, []); // empty dependency array → runs once when component mounts
+
 
   // console.log(cafeList);
   // console.log(id);
   const cafe = cafeList.find((c) => c.id === id); 
+  // console.log(cafe)
 
   // error handling logic
   if (!cafe) return <h1>Loading...</h1>;
@@ -82,7 +83,6 @@ function CafeView({ }) {
     Object.entries(cafe.attributes)
       .map(([key, rawValue]) => {
         let value = rawValue;
-
         // convert json like strings into real objects
         if (typeof value === "string") {
           try {
@@ -99,6 +99,7 @@ function CafeView({ }) {
           }
         }
 
+        if (value === null) return null;
         if (typeof value === "object" && value !== null) { // skip false/empty values
             if (!Object.values(value).some((v) => v === true)) return null;
             } else if (value === false) {
@@ -108,12 +109,12 @@ function CafeView({ }) {
         return (
         <li key={key}>
             <strong>{key}:</strong>{" "}
-            {typeof value === "object"
+            {typeof value === "object" // if value is obj, convert.
             ? Object.entries(value)
                 .filter(([_, v]) => v === true)
                 .map(([subKey]) => subKey)
-                .join(", ")
-            : value}
+                .join(", ") // if not, just text
+            : value} 
         </li>
         );
     })}

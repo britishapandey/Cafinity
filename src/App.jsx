@@ -142,6 +142,13 @@ function App() {
           }
         />
 
+        {/* Cafe view route */}
+        <Route
+          path="/cafe/:id"
+          element={
+            <CafeView/> 
+          } 
+        />
         <Route
           path="/business"
           element={<OwnerDashboard />}

@@ -73,16 +73,33 @@ npm run dev
 │   └── /assets
 │
 ├── /src
-│   ├── /components
-│   │   └── auth.jsx
-│   ├── /config
-│   │   └── firebase.js
 │   ├── App.css
 │   ├── App.jsx
-│   ├── index.css 
+│   ├── /assets
+│   │   └── react.svg
+│   ├── /components
+│   │   ├── auth.jsx
+│   │   ├── CafeCard.jsx
+│   │   ├── CafeForm.jsx
+│   │   ├── CafeList.jsx
+│   │   ├── CafeListing.jsx
+│   │   ├── CafeView.jsx
+│   │   ├── Home.jsx
+│   │   ├── login.jsx
+│   │   ├── NavBar.jsx
+│   │   ├── OwnerDashboard.jsx
+│   │   ├── profile.jsx
+│   │   ├── register.jsx
+│   │   ├── SearchFilter.jsx
+│   │   └── settings.jsx
+│   ├── /config
+│   │   └── firebase.js
+│   ├── /contexts
+│   ├── index.css
 │   ├── main.jsx
-│   └── testDatabase.js
-│   
+│   ├── testDatabase.js
+│   └── /utils
+│
 ├── .gitignore
 ├── eslint.config.js
 ├── index.html

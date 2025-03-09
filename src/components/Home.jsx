@@ -106,7 +106,7 @@ const Home = ({ user }) => {
       tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru == "True");
     }
     if (filters.wifi) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi == "u'free'");
     }
 
     setFilteredCafes(tempFilteredCafes);

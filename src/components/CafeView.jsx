@@ -69,7 +69,28 @@ function CafeView({ }) {
 
   }, []); // empty dependency array → runs once when component mounts
 
-  
+  const formatHours = (hoursString) => {
+    if (!hoursString || typeof hoursString !== 'string') return 'Closed';
+
+    //split the range (ex "16:30-21:0" -> ["16:30", "21:0"])
+    const [start, end] = hoursString.split('-');
+
+    const formatTime = (time) => {
+      // handle cases like "8:0" by adding "0" if needed
+      const [hours, minutes] = time.split(':');
+      const hourNum = parseInt(hours)
+      const minNum = parseInt(minutes) || 0;
+
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const hour12 = hourNum % 12 || 12; // conver to 12hour format
+      const minuteStr = minNum < 10 ? `0${minNum}` : minNum;
+
+      return `${hour12}:${minuteStr}${period}`;
+    };
+
+    return `${formatTime(start)}-${formatTime(end)}`;
+  };
+
   // big main merge:
   // const handleBack = () => {
   //   navigate(-1); // Go back to previous page
@@ -159,6 +180,7 @@ function CafeView({ }) {
 
 
   const cafe = cafeList.find((c) => c.id === id); // console.log(cafe)
+  console.log("Cafe Schema:", cafe); // Log the entire cafe object to inspect its structure
 
   // error handling logic
   if (!cafe) return <h1>Loading...</h1>;
@@ -220,7 +242,7 @@ function CafeView({ }) {
           {cafe.hours &&
           Object.entries(cafe.hours).map(([day, hours]) => (
               <li key={day}>
-              <strong>{day}:</strong> {hours}
+              <strong>{day}:</strong> {formatHours(hours)}
               </li>
           ))}
       </ul>
@@ -235,49 +257,118 @@ function CafeView({ }) {
 
       {/* Amenities */}
       <div className="mb-4">
-      <p className="text-gray-800 font-medium mb-2">Amenities:</p>
-      <ul className="list-disc list-inside text-gray-600">
-      {cafe.attributes &&
-      Object.entries(cafe.attributes)
-        .map(([key, rawValue]) => {
-          let value = rawValue;
-          // convert json like strings into real objects
-          if (typeof value === "string") {
-            try {
-              value = value
-              .replace(/'/g, '"') // Convert single quotes to double quotes
-              .replace(/\bTrue\b/g, "true")
-              .replace(/\bFalse\b/g, "false")
-              .replace(/\bNone\b/g, "null")
-              .replace(/u"([^"]+)"/g, '"$1"'); // Handle u'...' strings
-              value = JSON.parse(value);
-            } catch (e) {
-              console.error("JSON Parse Error:", rawValue);
-              return null; // skip invalid values
-            }
-          }
+        <p className="text-gray-800 font-medium mb-2">Amenities:</p>
+        {cafe.attributes ? (
+          <ul className="list-none text-gray-600 space-y-1">
+            {Object.entries(cafe.attributes)
+              .map(([key, rawValue]) => {
+                // Parse JSON-like strings and clean up 'u' prefixes
+                let value = rawValue;
+                if (typeof value === "string") {
+                  try {
+                    value = value
+                      .replace(/'/g, '"')
+                      .replace(/\bTrue\b/g, "true")
+                      .replace(/\bFalse\b/g, "false")
+                      .replace(/\bNone\b/g, "null")
+                      .replace(/u"([^"]+)"/g, '"$1"');
+                    value = JSON.parse(value);
+                  } catch (e) {
+                    value = rawValue.replace(/u'/g, "").replace(/'/g, "");
+                  }
+                }
 
-          if (value === null) return null;
-          if (typeof value === "object" && value !== null) { // skip false/empty values
-              if (!Object.values(value).some((v) => v === true)) return null;
-              } else if (value === false) {
-              return null;
-          }
+                // Skip irrelevant or falsy values
+                if (value === null || value === false || value === "None") return null;
 
-          return (
-          <li key={key}>
-              <strong>{key}:</strong>{" "}
-              {typeof value === "object" // if value is obj, convert.
-              ? Object.entries(value)
-                  .filter(([_, v]) => v === true)
-                  .map(([subKey]) => subKey)
-                  .join(", ") // if not, just text
-              : value} 
-          </li>
-          );
-      })}
+                // User-friendly formatting
+                let displayText = "";
+                switch (key) {
+                  case "RestaurantsPriceRange2":
+                    displayText = `Price Range: ${"💲".repeat(parseInt(value))} (out of 4)`;
+                    break;
+                  case "RestaurantsTakeOut":
+                    displayText = value ? "Takeout Available" : "No Takeout";
+                    break;
+                  case "RestaurantsDelivery":
+                    displayText = value ? "Delivery Available" : "No Delivery";
+                    break;
+                  case "BusinessParking":
+                    if (typeof value === "object") {
+                      const parkingOptions = Object.entries(value)
+                        .filter(([_, v]) => v === true)
+                        .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
+                        .join(", ");
+                      displayText = parkingOptions ? `Parking: ${parkingOptions}` : "No Parking Info";
+                    }
+                    break;
+                  case "NoiseLevel":
+                    displayText = `Noise Level: ${value.charAt(0).toUpperCase() + value.slice(1)}`;
+                    break;
+                  case "BusinessAcceptsCreditCards":
+                    displayText = value ? "Accepts Credit Cards" : "Cash Only";
+                    break;
+                  case "BikeParking":
+                    displayText = value ? "Bike Parking Available" : "No Bike Parking";
+                    break;
+                  case "OutdoorSeating":
+                    displayText = value ? "Outdoor Seating Available" : "No Outdoor Seating";
+                    break;
+                  case "WiFi":
+                    displayText = `WiFi: ${value.charAt(0).toUpperCase() + value.slice(1)}`;
+                    break;
+                  case "Caters":
+                    displayText = value ? "Catering Available" : "No Catering";
+                    break;
+                  case "HasTV":
+                    displayText = value ? "TV Available" : "No TV";
+                    break;
+                  case "RestaurantsAttire":
+                    displayText = `Dress Code: ${value.charAt(0).toUpperCase() + value.slice(1)}`;
+                    break;
+                  case "Alcohol":
+                    displayText = `Alcohol: ${value === "none" ? "None" : value.charAt(0).toUpperCase() + value.slice(1)}`;
+                    break;
+                  case "GoodForKids":
+                    displayText = value ? "Good for Kids" : "Not Kid-Friendly";
+                    break;
+                  case "RestaurantsGoodForGroups":
+                    displayText = value ? "Good for Groups" : "Not Ideal for Groups";
+                    break;
+                  case "GoodForMeal":
+                    if (typeof value === "object") {
+                      const meals = Object.entries(value)
+                        .filter(([_, v]) => v === true)
+                        .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
+                        .join(", ");
+                      displayText = meals ? `Good for: ${meals}` : null;
+                    }
+                    break;
+                  case "Ambience":
+                    if (typeof value === "object") {
+                      const ambiences = Object.entries(value)
+                        .filter(([_, v]) => v === true)
+                        .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
+                        .join(", ");
+                      displayText = ambiences ? `Ambience: ${ambiences}` : null;
+                    }
+                    break;
+                  default:
+                    displayText = `${key}: ${value}`; // Fallback
+                }
 
-      </ul>
+                return displayText ? (
+                  <li key={key} className="flex items-center">
+                    <CheckCircle size={16} color="#A07855" className="mr-2" />
+                    {displayText}
+                  </li>
+                ) : null;
+              })
+              .filter(Boolean)}
+          </ul>
+        ) : (
+          <p className="text-gray-500 italic">No amenities information available.</p>
+        )}
       </div>
 
     </div>

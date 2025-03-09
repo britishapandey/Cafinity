@@ -6,6 +6,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");
   const [newCafeAddress, setNewCafeAddress] = useState("");
   const [newCafeState, setNewCafeState] = useState("");
+  const [newCafeCity, setNewCafeCity] = useState("");
   const [newCafePostalCode, setNewCafePostalCode] = useState("");
   const [newCafeRating, setNewCafeRating] = useState(0);
   const [cafeCreditCard, setCafeCreditCard] = useState(false);
@@ -98,6 +99,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
     const newCafe = {
       name: newCafeName,
       address: newCafeAddress,
+      city: newCafeCity,
       state: newCafeState,
       postal_code: newCafePostalCode,
       stars: newCafeRating,
@@ -111,6 +113,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
     // Reset form
     setNewCafeName("");
     setNewCafeAddress("");
+    setNewCafeCity("");
     setNewCafeState("");
     setNewCafePostalCode("");
     setNewCafeRating(0);
@@ -135,7 +138,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
+    <div className="p-6 m-4 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Add a New Cafe</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4">
@@ -157,6 +160,14 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               required
             />
             <input
+            id="cafe-city"
+            placeholder="City"
+            value={newCafeCity}
+            onChange={(e) => setNewCafeCity(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+            <input
               id="cafe-state"
               placeholder="State"
               value={newCafeState}
@@ -175,27 +186,30 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
 
         <div>
           <h4 className="text-lg font-semibold mb-4">Amenities</h4>
-          <FormGroup className="grid grid-cols-2 gap-4">
+          <FormGroup className="">
+            <div className="grid grid-cols-1 sm:grid-cols-2">
             <FormControlLabel
               control={<Checkbox checked={cafeCreditCard} />}
               label="Accepts Credit Card"
               onChange={(e) => setCafeCreditCard(e.target.checked)}
-            />
+              />
             <FormControlLabel
               control={<Checkbox checked={cafeBikeParking} />}
               label="Bike Parking"
               onChange={(e) => setCafeBikeParking(e.target.checked)}
-            />
+              />
             <FormControlLabel
               control={<Checkbox checked={cafeNoiseLevel} />}
               label="Quiet"
               onChange={(e) => setCafeNoiseLevel(e.target.checked)}
-            />
+              />
             <FormControlLabel
               control={<Checkbox checked={cafeGoodForGroups} />}
               label="Good for Groups"
               onChange={(e) => setCafeGoodForGroups(e.target.checked)}
-            />
+              />
+            {/* </div> */}
+            {/* <div className="flex flex-col"> */}
             <FormControlLabel
               control={<Checkbox checked={cafeOutdoorSeating} />}
               label="Outdoor Seating"
@@ -210,7 +224,8 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               control={<Checkbox checked={cafeWiFi} />}
               label="WiFi"
               onChange={(e) => setCafeWiFi(e.target.checked)}
-            />
+              />
+              </div>
           </FormGroup>
         </div>
 
@@ -256,7 +271,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Image URL"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full"
             />
             <button
               onClick={handleImageUrl}

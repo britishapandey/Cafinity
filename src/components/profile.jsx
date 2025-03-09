@@ -170,7 +170,7 @@ function Profile({ setUserRole }) {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header Section */}
           <div className="relative h-48 bg-gradient-to-r from-[#6B7AEE] to-[#8691F0]">
-            <div className="absolute -bottom-16 left-8 flex items-end space-x-6">
+            <div className="absolute -bottom-20 left-8 flex items-end space-x-6">
               <div className="relative group">
                 <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white">
                   {pic || user.photoURL ? (
@@ -224,7 +224,7 @@ function Profile({ setUserRole }) {
           </div>
 
           {/* Profile Content */}
-          <div className="pt-20 px-8 pb-8">
+          <div className="pt-24 px-8 pb-8">
             {!isEditing ? (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">

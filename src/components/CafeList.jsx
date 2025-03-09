@@ -22,7 +22,7 @@ function CafeList({ cafes, showMap }) {
 
     useEffect(() => {
       if (map && hoveredCafe) {
-        map.setCenter({ lat: hoveredCafe.latitude, lng: hoveredCafe.longitude });
+        map.setCenter({ lat: Number(hoveredCafe.latitude), lng: Number(hoveredCafe.longitude) });
         map.setZoom(15);
       }
     }, [map, hoveredCafe]);
@@ -38,7 +38,7 @@ function CafeList({ cafes, showMap }) {
           showError
         );
       }
-    }, [map, hoveredCafe]); // Add hoveredCafe to reset when cleared
+    }, [map, hoveredCafe]);
 
     return <></>;
   };
@@ -130,13 +130,20 @@ function CafeList({ cafes, showMap }) {
               mapId={MAP_ID}
             >
               <GetLocation />
-              {currentCafes.map((cafe) => (
-                <AdvancedMarker
-                  key={cafe.id || cafe.business_id}
-                  position={{ lat: cafe.latitude, lng: cafe.longitude }}
-                  title={cafe.name}
-                />
-              ))}
+              {currentCafes
+                .filter((cafe) => 
+                  cafe.latitude !== undefined && 
+                  cafe.longitude !== undefined && 
+                  !isNaN(Number(cafe.latitude)) && 
+                  !isNaN(Number(cafe.longitude))
+                )
+                .map((cafe) => (
+                  <AdvancedMarker
+                    key={cafe.id || cafe.business_id}
+                    position={{ lat: Number(cafe.latitude), lng: Number(cafe.longitude) }}
+                    title={cafe.name}
+                  />
+                ))}
             </Map>
           </APIProvider>
         </div>

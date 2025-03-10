@@ -19,7 +19,7 @@ function CafeList({ cafes, showMap }) {
 
   const GetLocation = () => {
     const map = useMap();
-
+    
     useEffect(() => {
       if (map && hoveredCafe) {
         map.setCenter({ lat: Number(hoveredCafe.latitude), lng: Number(hoveredCafe.longitude) });
@@ -27,20 +27,28 @@ function CafeList({ cafes, showMap }) {
       }
     }, [map, hoveredCafe]);
 
-    useEffect(() => {
-      if (navigator.geolocation && !hoveredCafe) {
+    const centerOnCurrentLocation = () => {
+      if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
+          position => {
             const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
             map.setCenter(pos);
             map.setZoom(13);
+            setHoveredCafe(null);
           },
           showError
         );
       }
-    }, [map, hoveredCafe]);
+    };
 
-    return <></>;
+    return (
+      <button
+        onClick={centerOnCurrentLocation}
+        className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 z-10"    
+      >
+        My Location
+      </button>
+    );
   };
 
   const showError = (error) => {
@@ -89,7 +97,6 @@ function CafeList({ cafes, showMap }) {
       setCurrentPage(page);
       setShowInput(false);
       setInputPage("");
-      setHoveredCafe(null);
     }
   };
 
@@ -100,13 +107,13 @@ function CafeList({ cafes, showMap }) {
   };
 
   const handleCafeHover = (cafe) => setHoveredCafe(cafe);
-  const handleCafeLeave = () => setHoveredCafe(null);
+  const handleCafeLeave = () => {};
 
   const pageNumbers = window.innerWidth > 768 ? getPageNumbers() : getPageNumbers().slice(0, 3).concat("...").concat(totalPages);
 
   return (
-    <div className="flex flex-row h-screen relative pb-20 gap-4">
-      <div className={`flex-1 overflow-y-auto pr-4 ${showMap ? "" : "w-full"}`}>
+    <div className="flex flex-row h-full gap-4 relative">
+      <div className={`flex-1 overflow-y-auto pr-4 pb-16 ${showMap ? "" : "w-full"}`}>
         <div className="flex flex-wrap gap-4 justify-center">
           {currentCafes.map((cafe) => (
             <CafeCard
@@ -120,7 +127,7 @@ function CafeList({ cafes, showMap }) {
       </div>
 
       {showMap && (
-        <div className="w-[400px] h-screen">
+        <div className="w-[400px] h-full">
           <APIProvider apiKey={API_KEY} libraries={["marker"]} onLoad={() => console.log("Google Maps API loaded")}>
             <Map
               style={{ height: "100%", borderRadius: "20px" }}
@@ -149,7 +156,7 @@ function CafeList({ cafes, showMap }) {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
+      <div className={`fixed bottom-0 bg-white shadow-lg p-4 ${showMap ? "left-0 right-[400px]" : "left-0 right-0"} z-10`}>
         <div className="flex justify-center items-center gap-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}

@@ -4,7 +4,6 @@ import {
   APIProvider,
   Map,
   useMap,
-  useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;

@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import axios from 'axios';
 
-function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
+const IMGUR_CLIENT_ID = import.meta.env.VITE_IMGUR_CLIENT_ID;
+
+
+function CafeForm({ onSubmitCafe }) { 
   const [newCafeName, setNewCafeName] = useState("");
   const [newCafeAddress, setNewCafeAddress] = useState("");
   const [newCafeState, setNewCafeState] = useState("");
@@ -67,16 +70,25 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
     }
   };
 
+  // new function to upload imgur
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const storageRef = ref(storage, `cafes/${file.name}`);
+      const formData = new FormData();
+      formData.append("image", file);
+
       try {
-        await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
-        setNewCafeImages([...newCafeImages, downloadURL]);
+        const response = await axios.post("https://api.imgur.com/3/image", formData, {
+          headers: {
+            Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        const imageUrl = response.data.data.link;
+        setNewCafeImages([...newCafeImages, imageUrl]);
       } catch (err) {
-        console.error("Error uploading image:", err);
+        console.error("Error uploading to Imgur:", err);
+        alert("Failed to upload image. Please try again.");
       }
     }
   };

@@ -12,7 +12,6 @@ import Profile from './components/profile';
 import SearchFilter from './components/SearchFilter';
 import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
 import OwnerDashboard from './components/OwnerDashboard';
-import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
 import CafeView from './components/CafeView'; 
 
@@ -88,82 +87,84 @@ function App() {
   }
 
   return (
-    <div>
+    <div className='h-screen overflow-hidden flex flex-col'>
       <header>
       {/* Pass the user state to the Navbar */}
       <Navbar user={user} />
       </header>
-
-      <Routes>
-        {/* Home route - visible only to authenticated users */}
-        <Route
-          path="/"
-          element={
-            user ? (
-              <>
-                <Home user={user}/>
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Login route */}
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" /> : <Login />}
-        />
-
-        {/* Register route */}
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <Register />}
-        />
-
-        {/* Profile route - visible only to authenticated users */}
-        <Route
-          path="/profile"
-          element={user ? 
-            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/search"
-          element={
-            user ? (
-              <>
-                <SearchFilter onSearch={handleSearchSubmit} />
-                <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Cafe view route */}
-        <Route
-          path="/cafe/:id"
-          element={
-            <CafeView/> 
-          } 
-        />
-        <Route
-          path="/business"
-          element={<OwnerDashboard />}
+      <main>
+        <Routes>
+          {/* Home route - visible only to authenticated users */}
+          <Route
+            path="/"
+            element={
+              user ? (
+                <>
+                  <Home user={user}/>
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
 
-        <Route 
-          path="/addcafe"
-          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+          {/* Login route */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login />}
+          />
 
-        <Route
-          path="/cafe/:cafeId"
-          element={user ? <CafeView /> : <Navigate to="/login" />}
-        />
+          {/* Register route */}
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/" /> : <Register />}
+          />
 
-      </Routes>
+          {/* Profile route - visible only to authenticated users */}
+          <Route
+            path="/profile"
+            element={user ? 
+              <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/search"
+            element={
+              user ? (
+                <>
+                  <SearchFilter onSearch={handleSearchSubmit} />
+                  <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          {/* Cafe view route */}
+          <Route
+            path="/cafe/:id"
+            element={
+              <CafeView/> 
+            } 
+          />
+          <Route
+            path="/business"
+            element={<OwnerDashboard />}
+            />
+
+          <Route 
+            path="/addcafe"
+            element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+
+          <Route
+            path="/cafe/:cafeId"
+            element={user ? <CafeView /> : <Navigate to="/login" />}
+          />
+
+        </Routes>
+      </main>
+      
 
 
     </div>

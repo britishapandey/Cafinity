@@ -121,9 +121,9 @@ const Home = ({ user }) => {
   }, [searchTerm, cafeList]);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       {/* Header with Search and Filters */}
-      <div className="my-4 px-4 flex gap-2 items-center w-full">
+      <div className="my-4 px-4 flex gap-2 items-center w-full shrink-0">
         <button 
           ref={sortRef} {...sortProps}
           className="z-10 px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">

@@ -127,7 +127,7 @@ function CafeList({ cafes, showMap }) {
       </div>
 
       {showMap && (
-        <div className="w-[400px] h-full">
+        <div className="w-[400px] h-96">
           <APIProvider apiKey={API_KEY} libraries={["marker"]} onLoad={() => console.log("Google Maps API loaded")}>
             <Map
               style={{ height: "100%", borderRadius: "20px" }}

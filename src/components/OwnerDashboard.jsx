@@ -25,10 +25,11 @@ const OwnerDashboard = () => {
   const user = auth.currentUser;
 
   // Fetch cafe list from Firebase
-  const getCafeList = async () => {
+  const getOwnerCafes = async () => {
     try {
         const data = await getDocs(cafesCollectionRef);
-        const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        let filteredData = data.docs.map((doc) => ({ ...doc.data(),id: doc.id }));
+        filteredData = filteredData.filter((cafe) => cafe.ownerId === user.uid); // Filter cafes by ownerId
         setCafeList(filteredData);
     } catch (err) {
         console.error(err);
@@ -39,7 +40,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     if (user) {
       initializeProfile();
-      getCafeList();
+      getOwnerCafes();
     }
   }, [user]);
 
@@ -174,7 +175,7 @@ const OwnerDashboard = () => {
             )}
           </div>
           <div className="max-w-[60vw] mt-10">
-            <h2 className="text-xl font-bold m-4">Your Cafes</h2>
+            <h2 className="text-xl font-bold m-4">Your Cafes ({cafeList.length})</h2>
             <div>
               <CafeList cafes={cafeList}/>
             </div>

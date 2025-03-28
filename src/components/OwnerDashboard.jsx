@@ -7,7 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 const OwnerDashboard = () => {
   // currently borrowing from Profile.jsx + using CafeList component
   // FIXME: Cafelist does not display user's owned cafes
-  const [userRole, setUserRole] = useState("user"); // State for user role
+  const [userRole, setUserRole] = useState("owner"); // State for user role
   const [profileData, setProfileData] = useState({
     name: "",
     role: "user",

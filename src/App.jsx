@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './config/firebase'; // Firebase config
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
@@ -41,11 +41,25 @@ function App() {
     getCafeList(); // Fetch data on initial load
   }, []); 
 
+  const getUserRole = async () => {
+    if (user) {
+      const userDoc = doc(db, "profiles", user.uid); // Assuming you have a users collection
+      const docSnap = await getDoc(userDoc);
+      if (docSnap.exists()) {
+        setUserRole(() => (docSnap.data().role)); // Set user role based on Firestore data
+        console.log("User role:", docSnap.data().role);
+      } else {
+        console.log("No such document!");
+      }
+    }
+  }
+
 
   // Monitor user authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      getUserRole(); // Fetch user role when auth state changes
       setIsAuthLoading(false); // Set loading to false once we have the auth state
     });
     return unsubscribe; // Cleanup subscription
@@ -91,7 +105,7 @@ function App() {
     <div>
       <header>
       {/* Pass the user state to the Navbar */}
-      <Navbar user={user} />
+      <Navbar user={user} userRole={userRole}/>
       </header>
 
       <Routes>

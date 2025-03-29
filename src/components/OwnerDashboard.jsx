@@ -10,18 +10,8 @@ const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const OwnerDashboard = () => {
   // currently borrowing from Profile.jsx + using CafeList component
   // FIXME: Cafelist does not display user's owned cafes
-  const [userRole, setUserRole] = useState("owner"); // State for user role
-  const [profileData, setProfileData] = useState({
-    name: "",
-    role: "user",
-    bio: "",
-    preferences: "",
-    profilePicture: "",
-  });
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [cafeList, setCafeList] = useState([]); // State for cafe list
   const cafesCollectionRef = collection(db, "cafes");
 
@@ -29,13 +19,16 @@ const OwnerDashboard = () => {
 
   // Fetch cafe list from Firebase
   const getOwnerCafes = async () => {
+    setLoading(true);
     try {
-        const data = await getDocs(cafesCollectionRef);
-        let filteredData = data.docs.map((doc) => ({ ...doc.data(),id: doc.id }));
-        filteredData = filteredData.filter((cafe) => cafe.ownerId === user.uid); // Filter cafes by ownerId
-        setCafeList(filteredData);
+      const data = await getDocs(cafesCollectionRef);
+      let filteredData = data.docs.map((doc) => ({ ...doc.data(),id: doc.id }));
+      filteredData = filteredData.filter((cafe) => cafe.ownerId === user.uid); // Filter cafes by ownerId
+      setCafeList(filteredData);
     } catch (err) {
-        console.error(err);
+      console.error("Error fetching cafes:", err);
+    } finally {
+      setLoading(false);
     }
     };
 

@@ -315,7 +315,7 @@ const Home = ({ user }) => {
           </div>
         </div>
       ) : (
-        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} />
+        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} showNav={true}/>
       )}
     </>
   );

@@ -19,7 +19,7 @@ import CafeView from './components/CafeView';
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
-  const [userRole, setUserRole] = useState("user"); // State for user role
+  const [userRole, setUserRole] = useState(""); // State for user role
   const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
@@ -45,8 +45,8 @@ function App() {
     if (user) {
       const userDoc = doc(db, "profiles", user.uid); // Assuming you have a users collection
       const docSnap = await getDoc(userDoc);
-      if (docSnap.exists()) {
-        setUserRole(() => (docSnap.data().role)); // Set user role based on Firestore data
+      if (docSnap) {
+        setUserRole(docSnap.data().role); // Set user role based on Firestore data
         console.log("User role:", docSnap.data().role);
       } else {
         console.log("No such document!");

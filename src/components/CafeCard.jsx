@@ -134,7 +134,7 @@ function CafeCard({ cafe, onHover, onLeave }) {
         </div>
       </Link>
 
-      {isOwner && (<Link to={`/addcafe`} className="block no-underline">
+      {isOwner && (<Link to={`/editcafe/${cafeId}`} className="block no-underline">
         <div className="p-4 border-t">
           <button
             className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors"

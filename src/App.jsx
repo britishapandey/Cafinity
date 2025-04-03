@@ -15,6 +15,7 @@ import OwnerDashboard from './components/OwnerDashboard';
 import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
 import CafeView from './components/CafeView'; 
+import UpdateCafe from './components/updateCafe';
 
 
 function App() {
@@ -175,6 +176,11 @@ function App() {
         <Route
           path="/cafe/:cafeId"
           element={user ? <CafeView /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/editcafe/:id"
+          element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
         />
 
       </Routes>

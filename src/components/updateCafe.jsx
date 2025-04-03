@@ -42,8 +42,14 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
   const [imageUrl, setImageUrl] = useState("");
 
   const daysOfWeek = ["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"];
-
-  // Sync newCafeAttributes with checkbox states
+  
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(':');
+    const hourNum = parseInt(hours);
+    const minNum = parseInt(minutes) || 0;
+    const minuteStr = minNum < 10 ? `0${minNum}` : minNum;
+    return `${hourNum}:${minuteStr}`;
+  };
 
   const getCafe = async () => {
     setLoading(true);
@@ -73,7 +79,15 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
             WiFi: cafeWiFi,
           }
           );
-          setNewCafeHours(docSnap.data().hours);
+          Object.entries(docSnap.data().hours).forEach(([day, hours]) => {
+            const openHours = hours.split("-")[0];
+            const closeHours = hours.split("-")[1];
+            console.log(`${day}: ${openHours} - ${closeHours}`);
+            setNewCafeHours((prev) => ({ ...prev, [day]: {
+              open: formatTime(openHours),
+              close: formatTime(closeHours),
+            } }));
+          });
         } else {
           console.log("Cafe ID not found.");
         }

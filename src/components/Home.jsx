@@ -88,25 +88,25 @@ const Home = ({ user }) => {
     }
     
     if (filters.creditCard) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BusinessAcceptsCreditCards !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BusinessAcceptsCreditCards == "True");
     }
     if (filters.bikeParking) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BikeParking !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BikeParking == "True");
     }
     if (filters.noiseLevel) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.NoiseLevel !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.NoiseLevel == "u'quiet'");
     }
     if (filters.goodForGroups) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.RestaurantsGoodForGroups !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.RestaurantsGoodForGroups == "True");
     }
     if (filters.outdoorSeating) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.OutdoorSeating !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.OutdoorSeating == "True");
     }
     if (filters.driveThru) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru == "True");
     }
     if (filters.wifi) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi !== undefined);
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi == "u'free'");
     }
 
     setFilteredCafes(tempFilteredCafes);

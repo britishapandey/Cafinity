@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './config/firebase'; // Firebase config
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
@@ -15,12 +15,13 @@ import OwnerDashboard from './components/OwnerDashboard';
 import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
 import CafeView from './components/CafeView'; 
+import UpdateCafe from './components/updateCafe';
 import CafeRecommender from './components/CafeRecommender'; 
 
 
 function App() {
   const [user, setUser] = useState(null); // State for logged-in user
-  const [userRole, setUserRole] = useState("user"); // State for user role
+  const [userRole, setUserRole] = useState(""); // State for user role
   const [cafeList, setCafeList] = useState([]); // State for cafe list in App.js (Firebase data)
   const [filteredCafes, setFilteredCafes] = useState([]);
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
@@ -42,11 +43,25 @@ function App() {
     getCafeList(); // Fetch data on initial load
   }, []); 
 
+  const getUserRole = async () => {
+    if (user) {
+      const userDoc = doc(db, "profiles", user.uid); // Assuming you have a users collection
+      const docSnap = await getDoc(userDoc);
+      if (docSnap) {
+        setUserRole(docSnap.data().role); // Set user role based on Firestore data
+        console.log("User role:", docSnap.data().role);
+      } else {
+        console.log("No such document!");
+      }
+    }
+  }
+
 
   // Monitor user authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      getUserRole(); // Fetch user role when auth state changes
       setIsAuthLoading(false); // Set loading to false once we have the auth state
     });
     return unsubscribe; // Cleanup subscription
@@ -92,7 +107,7 @@ function App() {
     <div>
       <header>
       {/* Pass the user state to the Navbar */}
-      <Navbar user={user} />
+      <Navbar user={user} userRole={userRole}/>
       </header>
 
       <Routes>
@@ -167,6 +182,11 @@ function App() {
         <Route
           path="/cafe/:cafeId"
           element={user ? <CafeView /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/editcafe/:id"
+          element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
         />
 
       </Routes>

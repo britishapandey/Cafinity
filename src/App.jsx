@@ -16,6 +16,7 @@ import CafeCard from './components/CafeCard';
 import CafeForm from './components/CafeForm';
 import CafeView from './components/CafeView'; 
 import UpdateCafe from './components/updateCafe';
+import CafeRecommender from './components/CafeRecommender'; 
 
 
 function App() {
@@ -164,6 +165,11 @@ function App() {
             <CafeView/> 
           } 
         />
+        <Route
+          path="/caferecommender"
+          element={user ? <CafeRecommender /> : <Navigate to="/login" />}
+        />
+
         <Route
           path="/business"
           element={<OwnerDashboard />}

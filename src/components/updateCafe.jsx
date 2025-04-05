@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../config/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 
 function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
   const {id} = useParams();
@@ -151,6 +151,19 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
     onSubmitCafe(newCafe);
   };
 
+  const [deleteWarning, setDeleteWarning] = useState(false);
+  const navigate = useNavigate();
+  const handleDeleteCafe = async () => {
+    try {
+      const cafeDoc = doc(db, "cafes", id);
+      await deleteDoc(cafeDoc);
+      navigate(-1);
+      console.log("Cafe deleted successfully.");
+    } catch (err) {
+      console.error("Error deleting cafe:", err);
+    }
+  }
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -172,7 +185,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
             placeholder="Cafe Name"
             value={newCafeName}
             onChange={(e) => setNewCafeName(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border"
             required
           />
           <div className="grid grid-cols-2 gap-4">
@@ -181,7 +194,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Address"
               value={newCafeAddress}
               onChange={(e) => setNewCafeAddress(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border"
               required
             />
             <input
@@ -189,14 +202,14 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="State"
               value={newCafeState}
               onChange={(e) => setNewCafeState(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border"
             />
             <input
               id="cafe-postalcode"
               placeholder="Zip Code"
               value={newCafePostalCode}
               onChange={(e) => setNewCafePostalCode(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border"
             />
           </div>
         </div>
@@ -257,7 +270,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
                     [day]: { ...newCafeHours[day], open: e.target.value },
                   })
                 }
-                className="col-span-1 p-2 border rounded"
+                className="col-span-1 p-2 border"
               />
               <input
                 type="time"
@@ -269,7 +282,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
                     [day]: { ...newCafeHours[day], close: e.target.value },
                   })
                 }
-                className="col-span-1 p-2 border rounded"
+                className="col-span-1 p-2 border"
               />
             </div>
           ))}
@@ -284,12 +297,12 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Image URL"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border"
             />
             <button
               onClick={handleImageUrl}
               disabled={!imageUrl}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="bg-blue-500 text-white px-4 py-2 hover:bg-blue-600"
             >
               Add URL
             </button>
@@ -299,25 +312,49 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               id="image-upload"
               type="file"
               onChange={handleImageUpload}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border"
             />
           </div>
           <ul className="mt-4 flex gap-4">
             {newCafeImages.map((image, index) => (
               <li key={index}>
-                <img src={image} alt={`Cafe Image ${index + 1}`} className="w-24 h-24 object-cover rounded" />
+                <img src={image} alt={`Cafe Image ${index + 1}`} className="w-24 h-24 object-cover" />
               </li>
             ))}
           </ul>
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        >
-          Add Cafe
-        </button>
+        {/* Cafe Deletion Warning */}
+        {deleteWarning && (
+          <div className="bg-red-100 rounded-lg p-4 flex-col items-center justify-center text-center">
+            <h2>Wait! Are you sure you want to remove this cafe? 
+              <strong> This cannot be undone.</strong>
+            </h2>
+            <div className="flex items-center justify-center m-auto">
+              <button onClick={handleDeleteCafe} className="bg-red-500">
+                Yes, delete it.
+              </button>
+              <button onClick={() => setDeleteWarning(() => false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="flex">
+          <button
+            type="submit"
+            className="w-full bg-green-500 text-white px-4 py-2 hover:bg-green-600"
+          >
+            Add Cafe
+          </button>
+          <button
+            className={deleteWarning ? "bg-red-500" : ""}
+            onClick={() => setDeleteWarning(() => true)}>
+            Delete Cafe
+          </button>
+        </div>
       </form>
+
     </div>
   );
 }

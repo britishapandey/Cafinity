@@ -218,39 +218,39 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
           <h4 className="text-lg font-semibold mb-4">Amenities</h4>
           <FormGroup className="grid grid-cols-2 gap-4">
             <FormControlLabel
-              control={<Checkbox checked={cafeCreditCard === "true"} />}
+              control={<Checkbox defaultChecked={cafeCreditCard === "true"} />}
               label="Accepts Credit Card"
               onChange={(e) => setCafeCreditCard(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeBikeParking === "true"} />}
+              control={<Checkbox defaultChecked={cafeBikeParking === "true"} />}
               label="Bike Parking"
               onChange={(e) => setCafeBikeParking(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeNoiseLevel.includes("quiet")} />}
+              control={<Checkbox defaultChecked={cafeNoiseLevel.includes("quiet")} />}
               label="Quiet"
-              onChange={(e) => setCafeNoiseLevel(e.target.checked)}
+              onChange={(e) => setCafeNoiseLevel(e.target.checked ? "quiet" : "")}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeGoodForGroups === "true"} />}
+              control={<Checkbox defaultChecked={cafeGoodForGroups === "true"} />}
               label="Good for Groups"
               onChange={(e) => setCafeGoodForGroups(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeOutdoorSeating === "true"} />}
+              control={<Checkbox defaultChecked={cafeOutdoorSeating === "true"} />}
               label="Outdoor Seating"
               onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeDriveThru === "true"} />}
+              control={<Checkbox defaultChecked={cafeDriveThru === "true"} />}
               label="Drive Thru"
               onChange={(e) => setCafeDriveThru(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox checked={cafeWiFi.includes("free")} />}
+              control={<Checkbox defaultChecked={cafeWiFi.includes("free")} />}
               label="WiFi"
-              onChange={(e) => setCafeWiFi(e.target.checked)}
+              onChange={(e) => setCafeWiFi(e.target.checked ? "free" : "")}
             />
           </FormGroup>
         </div>

@@ -20,14 +20,11 @@ function CafeView() {
   const [wifiRating, setWifiRating] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // define the order of days
-  const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const { id } = useParams();
   const cafesCollectionRef = collection(db, "cafes");
 
-  // define the order of days
-  const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
+   // define the order of days
+   const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
     const getCafeList = async () => {
@@ -255,61 +252,74 @@ function CafeView() {
                 </span>
               </div>
 
-      {/* Categories */}
-      <p className="text-gray-800 mb-4">
-      <strong>Categories:</strong> {cafe.categories}
-      </p>
+              {/* Hours Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Hours</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {cafe.hours &&
+                    Object.entries(cafe.hours)
+                    .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+                    .map(([day, hours]) => (
+                      <div key={day} className="flex justify-between">
+                        <span className="font-medium text-gray-700">{day}:</span>
+                        <span className="text-gray-600">{formatHours(hours)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
 
-      {/* Hours */}
-      <div className="mb-4">
-      <p className="text-gray-800 font-medium mb-2">Hours:</p>
-      <ul className="list-disc list-inside text-gray-600">
-          {cafe.hours &&
-          Object.entries(cafe.hours).map(([day, hours]) => (
-              <li key={day}>
-              <strong>{day}:</strong> {formatHours(hours)}
-              </li>
-          ))}
-      </ul>
-      </div>
+              {/* Amenities Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Amenities</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {cafe.attributes &&
+                    Object.entries(cafe.attributes)
+                      .filter(([_, value]) => {
+                        if (typeof value === 'string') {
+                          try {
+                            const parsed = JSON.parse(
+                              value
+                                .replace(/'/g, '"')
+                                .replace(/\bTrue\b/g, 'true')
+                                .replace(/\bFalse\b/g, 'false')
+                                .replace(/\bNone\b/g, 'null')
+                                .replace(/u"([^"]+)"/g, '"$1"')
+                            );
+                            return parsed !== false && parsed !== null;
+                          } catch (e) {
+                            return value !== 'False' && value !== 'None';
+                          }
+                        }
+                        return value !== false && value !== null;
+                      })
+                      .map(([key, rawValue]) => {
+                        let value = rawValue;
+                        if (typeof value === 'string') {
+                          try {
+                            value = JSON.parse(
+                              value
+                                .replace(/'/g, '"')
+                                .replace(/\bTrue\b/g, 'true')
+                                .replace(/\bFalse\b/g, 'false')
+                                .replace(/\bNone\b/g, 'null')
+                                .replace(/u"([^"]+)"/g, '"$1"')
+                            );
+                          } catch (e) {
+                            // Not JSON, use as-is
+                          }
+                        }
 
-      {/* Hours - Placeholder for now */}
-      {/* <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Open now until 6:00PM | <button className="text-[#007BFF] text-sm hover:underline">See hours</button>
-        </h3>
-      </div> */}
-
-      {/* Amenities */}
-      <div className="mb-4">
-      <p className="text-gray-800 font-medium mb-2">Amenities:</p>
-      <ul className="list-disc list-inside text-gray-600">
-      {cafe.attributes &&
-      Object.entries(cafe.attributes)
-        .map(([key, rawValue]) => {
-          let value = rawValue;
-          // convert json like strings into real objects
-          if (typeof value === "string") {
-            try {
-              value = value
-              .replace(/'/g, '"') // Convert single quotes to double quotes
-              .replace(/\bTrue\b/g, "true")
-              .replace(/\bFalse\b/g, "false")
-              .replace(/\bNone\b/g, "null")
-              .replace(/u"([^"]+)"/g, '"$1"'); // Handle u'...' strings
-              value = JSON.parse(value);
-            } catch (e) {
-              console.error("JSON Parse Error:", rawValue);
-              return null; // skip invalid values
-            }
-          }
-
-          if (value === null) return null;
-          if (typeof value === "object" && value !== null) { // skip false/empty values
-              if (!Object.values(value).some((v) => v === true)) return null;
-              } else if (value === false) {
-              return null;
-          }
+                        let displayValue = '';
+                        if (typeof value === 'object' && value !== null) {
+                          displayValue = Object.entries(value)
+                            .filter(([_, v]) => v === true)
+                            .map(([subKey]) => subKey)
+                            .join(', ');
+                        } else if (value === true) {
+                          displayValue = 'Yes';
+                        } else {
+                          displayValue = value;
+                        }
 
                         return (
                           <div key={key} className="flex items-start">

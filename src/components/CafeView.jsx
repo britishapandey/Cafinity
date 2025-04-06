@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { db, auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { Star, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 
 function CafeView() {
   const [cafeList, setCafeList] = useState([]);
@@ -18,6 +18,7 @@ function CafeView() {
   const [noiseRating, setNoiseRating] = useState(null);
   const [seatingRating, setSeatingRating] = useState(null);
   const [wifiRating, setWifiRating] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const { id } = useParams();
   const cafesCollectionRef = collection(db, "cafes");
@@ -78,6 +79,18 @@ function CafeView() {
     });
     return () => unsubscribe();
   }, []);
+
+  const nextImage = () => {
+    setCurrentImageIndex(prev => 
+      prev === cafe.images.length - 1 ? 0 : prev + 1
+    );
+  };
+  
+  const prevImage = () => {
+    setCurrentImageIndex(prev => 
+      prev === 0 ? cafe.images.length - 1 : prev - 1
+    );
+  };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -166,10 +179,37 @@ function CafeView() {
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={cafe.images[0].url}
-                alt={`Cafe ${cafe.name}`}
+                src={cafe.images[currentImageIndex].url}
+                alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              
+              {/* Navigation arrows (only show if multiple images exist) */}
+              {cafe.images.length > 1 && (
+                <>
+                  <button 
+                    onClick={prevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <ArrowLeft size={24} />
+                  </button>
+                  <button 
+                    onClick={nextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                    aria-label="Next image"
+                  >
+                    <ArrowRight size={24} />
+                  </button>
+                </>
+              )}
+              
+              {/* Image counter (only show if multiple images exist) */}
+              {cafe.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                  {currentImageIndex + 1} / {cafe.images.length}
+                </div>
+              )}
             </div>
           ) : (
             <div className="h-64 sm:h-80 md:h-96 bg-gray-100 flex items-center justify-center">

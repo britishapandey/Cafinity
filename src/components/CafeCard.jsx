@@ -9,6 +9,9 @@ function CafeCard({ cafe, onHover, onLeave }) {
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
 
+  // define the order of days
+  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'];
+  
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
     const [start, end] = hoursString.split('-');
@@ -109,7 +112,9 @@ function CafeCard({ cafe, onHover, onLeave }) {
               </button>
               {showHours && (
                 <div className="px-4 pb-3 text-sm text-gray-600 bg-white">
-                  {Object.entries(cafe.hours).map(([day, hours]) => (
+                  {Object.entries(cafe.hours)
+                  .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+                  .map(([day, hours]) => (
                     <div key={day} className="flex justify-between py-1">
                       <span className="font-medium">{day}:</span>
                       <span>{formatHours(hours)}</span>

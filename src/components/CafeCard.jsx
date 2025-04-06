@@ -122,18 +122,6 @@ function CafeCard({ cafe, onHover, onLeave }) {
         </div>
       </div>
 
-      {/* Fixed Button at Bottom */}
-      <Link to={`/cafe/${cafeId}`} className="block no-underline">
-        <div className="p-4 border-t">
-          <button
-            className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors"
-            onClick={(e) => e.stopPropagation()} // Prevent outer div click
-          >
-            View Cafe
-          </button>
-        </div>
-      </Link>
-
       {isOwner && (<Link to={`/editcafe/${cafeId}`} className="block no-underline">
         <div className="p-4 border-t">
           <button

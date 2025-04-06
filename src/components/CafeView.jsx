@@ -31,6 +31,8 @@ function CafeView({ }) {
   // main merge:
   const navigate = useNavigate();
 
+  // define the order of days
+  const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   // Fetch cafe list from Firebase
   useEffect(() => {
@@ -239,20 +241,15 @@ function CafeView({ }) {
       <p className="text-gray-800 font-medium mb-2">Hours:</p>
       <ul className="list-disc list-inside text-gray-600">
           {cafe.hours &&
-          Object.entries(cafe.hours).map(([day, hours]) => (
+          Object.entries(cafe.hours)
+          .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+          .map(([day, hours]) => (
               <li key={day}>
               <strong>{day}:</strong> {formatHours(hours)}
               </li>
           ))}
       </ul>
       </div>
-
-      {/* Hours - Placeholder for now */}
-      {/* <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Open now until 6:00PM | <button className="text-[#007BFF] text-sm hover:underline">See hours</button>
-        </h3>
-      </div> */}
 
       {/* Amenities */}
       <div className="mb-4">

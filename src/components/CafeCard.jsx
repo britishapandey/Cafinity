@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useMatch } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function CafeCard({ cafe, onHover, onLeave }) {
   const navigate = useNavigate();
   const [showHours, setShowHours] = useState(false);
-  const isOwner = useMatch("/business");
-
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
-
-
-  // define the order of days
-  const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
@@ -113,14 +107,12 @@ function CafeCard({ cafe, onHover, onLeave }) {
               </button>
               {showHours && (
                 <div className="px-4 pb-3 text-sm text-gray-600 bg-white">
-                  {Object.entries(cafe.hours)
-                    .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
-                    .map(([day, hours]) => (
-                      <div key={day} className="flex justify-between py-1">
-                        <span className="font-medium">{day}:</span>
-                        <span>{formatHours(hours)}</span>
-                      </div>
-                    ))}
+                  {Object.entries(cafe.hours).map(([day, hours]) => (
+                    <div key={day} className="flex justify-between py-1">
+                      <span className="font-medium">{day}:</span>
+                      <span>{formatHours(hours)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -139,17 +131,6 @@ function CafeCard({ cafe, onHover, onLeave }) {
           </button>
         </div>
       </Link>
-
-      {isOwner && (<Link to={`/editcafe/${cafeId}`} className="block no-underline">
-        <div className="p-4 border-t">
-          <button
-            className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors"
-            onClick={(e) => e.stopPropagation()} // Prevent outer div click
-          >
-            Manage Cafe
-          </button>
-        </div>
-      </Link>)}
     </div>
   );
 }

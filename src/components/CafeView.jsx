@@ -1,73 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../config/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { collection, getDocs, getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { Star, ArrowLeft, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react';
 
-function CafeView() {
-  const [cafeList, setCafeList] = useState([]);
+
+
+function CafeView({ }) {
+
+  const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
+  const [cafeList, setCafeList] = useState([]); // State for cafe list
+  const { id } = useParams();
+
+  // main merge:
+  // const { cafeId } = useParams();
+  // const [cafe, setCafe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [newReview, setNewReview] = useState({
+  const [reviews, setReviews] = useState([]); // State for reviews
+  const [newReview, setNewReview] = useState({ // State for new review form
     user: '',
     rating: 5,
     text: '',
   });
+  // main merge:
+  // Add new state variables for amenity ratings
   const [noiseRating, setNoiseRating] = useState(null);
   const [seatingRating, setSeatingRating] = useState(null);
   const [wifiRating, setWifiRating] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // define the order of days
-  const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const { id } = useParams();
-  const cafesCollectionRef = collection(db, "cafes");
+  // main merge:
+  const navigate = useNavigate();
 
   // define the order of days
   const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-
+  // Fetch cafe list from Firebase
   useEffect(() => {
-    const getCafeList = async () => {
-      try {
-        const data = await getDocs(cafesCollectionRef);
-        const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        setCafeList(filteredData);
-
-         // Find the current cafe and set its reviews
-        const currentCafe = filteredData.find((c) => c.id === id);
-        if (currentCafe && currentCafe.reviews) {
-          setReviews(currentCafe.reviews);
+      const getCafeList = async () => {
+        // setLoading(true);
+        try {
+            const data = await getDocs(cafesCollectionRef);
+            const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+            setCafeList(filteredData);
+            const db = getFirestore();
+  //       const cafesCollectionRef = collection(db, "cafes");
+  //       const data = await getDocs(cafesCollectionRef);
+  //       const cafeListFromFirebase = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+  //       const foundCafe = cafeListFromFirebase.find((c) => c.id === cafeId);
+        
+  //       if (foundCafe) {
+  //         setCafe(foundCafe);
+  //         setReviews(foundCafe.reviews || []); // Initialize with existing reviews from cafe object
+  //       } else {
+  //         setError("Cafe not found");
+  //       }
+        } catch (err) {
+            console.error(err);
+  //       console.error("Error fetching cafe:", err);
+  //       setError("Error loading cafe data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
         }
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load cafe data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    getCafeList();
-  }, [id]);
+      };
+      getCafeList();
+  //   if (cafeId) {
+  //     getCafe();
+  //   }
+  // }, [cafeId]);
+
+  }, []); // empty dependency array → runs once when component mounts
 
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
+
+    //split the range (ex "16:30-21:0" -> ["16:30", "21:0"])
     const [start, end] = hoursString.split('-');
 
     const formatTime = (time) => {
+      // handle cases like "8:0" by adding "0" if needed
       const [hours, minutes] = time.split(':');
-      const hourNum = parseInt(hours);
+      const hourNum = parseInt(hours)
       const minNum = parseInt(minutes) || 0;
+
       const period = hourNum >= 12 ? 'PM' : 'AM';
-      const hour12 = hourNum % 12 || 12;
+      const hour12 = hourNum % 12 || 12; // conver to 12hour format
       const minuteStr = minNum < 10 ? `0${minNum}` : minNum;
+
       return `${hour12}:${minuteStr}${period}`;
     };
 
     return `${formatTime(start)}-${formatTime(end)}`;
   };
 
+  // big main merge:
+  // const handleBack = () => {
+  //   navigate(-1); // Go back to previous page
+  // };
+  // Function to handle new review input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewReview((prevReview) => ({
@@ -75,185 +105,131 @@ function CafeView() {
       [name]: value,
     }));
   };
-
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // Add auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const nextImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === cafe.images.length - 1 ? 0 : prev + 1
-    );
-  };
-  
-  const prevImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === 0 ? cafe.images.length - 1 : prev - 1
-    );
-  };
-
+  const handleNoiseRatingChange = (e) => {
+        setNoiseRating(parseInt(e.target.value));
+    };
+  const handleSeatingRatingChange = (e) => {
+        setSeatingRating(parseInt(e.target.value));
+    };
+  const handleWifiRatingChange = (e) => {
+        setWifiRating(parseInt(e.target.value));
+    };
   const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-
-    if(!currentUser) {
-      setError("Please sign in to submit a review");
-      return;
-    }
-
-    try {
-      const cafeDocRef = doc(db, "cafes", id);
-      const reviewToAdd = {
-        user: newReview.user || "Anonymous",
-        rating: parseInt(newReview.rating),
-        text: newReview.text,
-        noiseRating: noiseRating,
-        seatingRating: seatingRating,
-        wifiRating: wifiRating,
-        date: new Date().toISOString(),
-        userID: currentUser.uid
-      };
-
-      // Use arrayUnion to add the new review without overwriting existing ones
-      await updateDoc(cafeDocRef, {
-        reviews: arrayUnion(reviewToAdd)
-      });
-
-      // Update local state
-      setReviews(prev => [...prev, reviewToAdd]);
-      setNewReview({ user: "", rating: 5, text: "" });
-      setNoiseRating(null);
-      setSeatingRating(null);
-      setWifiRating(null);
-      setError(null);
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      setError("Error submitting review: " + error.message);
-    }
+      e.preventDefault(); // Prevent default form submission
+     try {
+         const db = getFirestore();
+         const cafeDocRef = doc(db, "cafes", cafeId);
+         // Create new review object
+         const reviewToAdd = {
+             user: newReview.user || "Anonymous", // Default to "Anonymous" if no name
+             rating: parseInt(newReview.rating),
+             text: newReview.text,
+             noiseRating: noiseRating,
+             seatingRating: seatingRating,
+             wifiRating: wifiRating,
+         };
+         // Add the new review to the existing reviews or create a new array with one review
+         const updatedReviews = [...(cafe.reviews || []), reviewToAdd];
+         // Update the reviews array in the Firebase document
+         await updateDoc(cafeDocRef, { reviews: updatedReviews });
+         // Update local state with the new review data
+         setReviews(updatedReviews);
+         setCafe((prevCafe) => ({
+             ...prevCafe,
+             reviews: updatedReviews,
+         }));
+         // Clear the form
+         setNewReview({
+             user: "",
+             rating: 5,
+             text: "",
+         });
+          // Clear the amenity ratings
+          setNoiseRating(null);
+          setSeatingRating(null);
+          setWifiRating(null);
+     } catch (error) {
+         console.error("Error submitting review:", error);
+         setError("Error submitting review: " + error.message);
+     }
   };
+  // // if (loading) {
+  // //   return (
+  // //     <div className="bg-[#F0ECE3] min-h-screen flex items-center justify-center">
+  // //       <div className="bg-white p-6 rounded-lg shadow-lg">
+  // //         <p className="text-xl">Loading cafe details...</p>
+  // //       </div>
+  // //     </div>
+  // //   );
+  // // }
+  // if (error || !cafe) {
+  //   return (
+  //     <div className="bg-[#F0ECE3] min-h-screen flex items-center justify-center">
+  //       <div className="bg-white p-6 rounded-lg shadow-lg">
+  //         <p className="text-xl text-red-500">{error || "Cafe not found"}</p>
+  //         <button 
+  //           onClick={handleBack}
+  //           className="mt-4 bg-[#A07855] text-white py-2 px-4 rounded hover:bg-[#8C6A50]"
+  //         >
+  //           Go Back
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // } 
+  // end of that big main merge
 
-  const cafe = cafeList.find((c) => c.id === id);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-gray-500">Loading cafe details...</div>
-      </div>
-    );
-  }
 
-  if (error || !cafe) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
-          <p className="text-red-500 mb-4">{error || "Cafe not found"}</p>
-          <button 
-            onClick={() => window.history.back()}
-            className="bg-[#5B4A43] text-white py-2 px-6 rounded-md hover:bg-[#4A3C36] transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const cafe = cafeList.find((c) => c.id === id); // console.log(cafe)
+
+  // error handling logic
+  if (!cafe) return <h1>Loading...</h1>;
+  
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with back button */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center">
-          <button 
-            onClick={() => window.history.back()}
-            className="text-gray-600 hover:text-gray-900 mr-4"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-xl font-semibold text-gray-900">{cafe.name}</h1>
-        </div>
-      </header>
+  <div className="bg-[#F0ECE3] min-h-screen flex flex-col">
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Cafe Hero Section */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          {cafe.images && cafe.images.length > 0 ? (
-            <div className="relative h-64 sm:h-80 md:h-96">
-              <img
-                className="w-full h-full object-cover"
-                src={cafe.images[currentImageIndex].url}
-                alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-              
-              {/* Navigation arrows (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                    aria-label="Previous image"
-                  >
-                    <ArrowLeft size={24} />
-                  </button>
-                  <button 
-                    onClick={nextImage}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                    aria-label="Next image"
-                  >
-                    <ArrowRight size={24} />
-                  </button>
-                </>
-              )}
-              
-              {/* Image counter (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {cafe.images.length}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="h-64 sm:h-80 md:h-96 bg-gray-100 flex items-center justify-center">
-              <div className="text-center">
-                <ImageIcon className="mx-auto text-gray-400" size={48} />
-                <p className="mt-2 text-gray-500">No images available</p>
-              </div>
-            </div>
-          )}
-        </div>
+  {/* <header className="bg-[#5B4A43] p-4 flex items-center justify-between">
+    <button onClick={handleBack} className="text-white">
+      <ArrowLeft color="#FFFFFF" size={24} />
+    </button>
+    <h1 className="text-white text-xl font-semibold">View Cafe Reviews</h1>
+    <div></div>
+  </header> */}
 
-        {/* Cafe Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Cafe Info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
-              <p className="text-gray-600 mb-4">
-                {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
-              </p>
+  
+    {/* placeholder img */}
+    {cafe.images && cafe.images.length > 0 ? (
+      <img
+        className="w-full h-64 object-cover"
+        src={cafe.images[0]}
+        alt={`Cafe ${cafe.name}`}
+      />
+    ) : (
+      <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+        <ImageIcon color="#A07855" size={48} />
+        <p className="ml-2 text-gray-500">No Images Available</p>
+      </div>
+    )}
 
-              <div className="flex items-center mb-6">
-                <div className="flex items-center mr-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={20}
-                      className={i < Math.floor(cafe.stars) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                    />
-                  ))}
-                  <span className="ml-2 text-gray-700 font-medium">
-                    {cafe.stars} ({cafe.review_count} reviews)
-                  </span>
-                </div>
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  {cafe.categories.split(', ')[0]}
-                </span>
-              </div>
+
+    {/* Cafe Details */}
+    <div className="p-6">
+      {/* Cafe Name */}
+      <h3 className="text-xl font-semibold text-gray-800 mb-2">{cafe.name}</h3>
+
+      {/* Address */}
+      <p className="text-gray-600 mb-4">
+      {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
+      </p>
+
+      {/* Rating */}
+      <div className="flex items-center mb-4">
+      <span className="text-yellow-500">★</span>
+      <span className="ml-1 text-gray-800">{cafe.stars}</span>
+      <span className="ml-2 text-gray-600">({cafe.review_count} reviews)</span>
+      </div>
 
       {/* Categories */}
       <p className="text-gray-800 mb-4">
@@ -265,20 +241,15 @@ function CafeView() {
       <p className="text-gray-800 font-medium mb-2">Hours:</p>
       <ul className="list-disc list-inside text-gray-600">
           {cafe.hours &&
-          Object.entries(cafe.hours).map(([day, hours]) => (
+          Object.entries(cafe.hours)
+          .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+          .map(([day, hours]) => (
               <li key={day}>
               <strong>{day}:</strong> {formatHours(hours)}
               </li>
           ))}
       </ul>
       </div>
-
-      {/* Hours - Placeholder for now */}
-      {/* <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Open now until 6:00PM | <button className="text-[#007BFF] text-sm hover:underline">See hours</button>
-        </h3>
-      </div> */}
 
       {/* Amenities */}
       <div className="mb-4">
@@ -311,214 +282,196 @@ function CafeView() {
               return null;
           }
 
-                        return (
-                          <div key={key} className="flex items-start">
-                            <div className="flex-shrink-0 h-5 w-5 text-green-500 mr-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                            <div>
-                              <span className="font-medium text-gray-700 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                              <span className="text-gray-600 ml-1">{displayValue}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                </div>
-              </div>
-            </div>
+          return (
+          <li key={key}>
+              <strong>{key}:</strong>{" "}
+              {typeof value === "object" // if value is obj, convert.
+              ? Object.entries(value)
+                  .filter(([_, v]) => v === true)
+                  .map(([subKey]) => subKey)
+                  .join(", ") // if not, just text
+              : value} 
+          </li>
+          );
+      })}
+
+      </ul>
+      </div>
+
+    </div>
+
+
+    {/* Cafe Reviews Card (Right Side)*/}
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1">
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Cafe Reviews</h3>
+
+        {/* Write a Review Form */}
+        <form onSubmit={handleReviewSubmit} className="mb-4">
+          {/* User Name Input */}
+          <div className="mb-2">
+            <label htmlFor="user" className="block text-gray-700 text-sm font-bold mb-1">
+              Your Name:
+            </label>
+            <input
+              type="text"
+              id="user"
+              name="user"
+              value={newReview.user}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+              placeholder="Enter your name (optional)"
+            />
           </div>
 
-          {/* Right Column - Reviews */}
-          <div className="space-y-6">
-            {/* Review Form */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
-              <form onSubmit={handleReviewSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-1">
-                    Your Name (optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="user"
-                    name="user"
-                    value={newReview.user}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B4A43] focus:border-[#5B4A43]"
-                    placeholder="Anonymous"
-                  />
-                </div>
+          {/* Overall Rating Select */}
+          <div className="mb-2">
+            <label htmlFor="rating" className="block text-gray-700 text-sm font-bold mb-1">
+              Overall Rating:
+            </label>
+            <select
+              id="rating"
+              name="rating"
+              value={newReview.rating}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+            >
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
 
-                <div>
-                  <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
-                    Overall Rating
-                  </label>
-                  <select
-                    id="rating"
-                    name="rating"
-                    value={newReview.rating}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B4A43] focus:border-[#5B4A43]"
-                  >
-                    <option value="5">5 Stars - Excellent</option>
-                    <option value="4">4 Stars - Very Good</option>
-                    <option value="3">3 Stars - Average</option>
-                    <option value="2">2 Stars - Below Average</option>
-                    <option value="1">1 Star - Poor</option>
-                  </select>
-                </div>
+          {/* Amenity Ratings */}
+        <div className="mb-2">
+          <label className="block text-gray-700 text-sm font-bold mb-1">
+            Rate Amenities:
+          </label>
+          {/* Noise Rating */}
+          <div className="flex items-center mb-1">
+            <label htmlFor="noiseRating" className="mr-2 text-gray-700 text-sm">Noise:</label>
+            <select
+              id="noiseRating"
+              name="noiseRating"
+              value={noiseRating === null ? '' : noiseRating}
+              onChange={handleNoiseRatingChange}
+              className="shadow appearance-none border rounded py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+            >
+              <option value="">Select</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
 
-                {/* Amenity Ratings */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rate Amenities
-                  </label>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Noise Level:</span>
-                    <select
-                      value={noiseRating || ''}
-                      onChange={(e) => setNoiseRating(e.target.value ? parseInt(e.target.value) : null)}
-                      className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                    >
-                      <option value="">Select</option>
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <option key={`noise-${num}`} value={num}>
-                          {num} Star{num !== 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Seating Comfort:</span>
-                    <select
-                      value={seatingRating || ''}
-                      onChange={(e) => setSeatingRating(e.target.value ? parseInt(e.target.value) : null)}
-                      className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                    >
-                      <option value="">Select</option>
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <option key={`seating-${num}`} value={num}>
-                          {num} Star{num !== 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">WiFi Quality:</span>
-                    <select
-                      value={wifiRating || ''}
-                      onChange={(e) => setWifiRating(e.target.value ? parseInt(e.target.value) : null)}
-                      className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                    >
-                      <option value="">Select</option>
-                      {[1, 2, 3, 4, 5].map((num) => (
-                        <option key={`wifi-${num}`} value={num}>
-                          {num} Star{num !== 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+          {/* Seating Rating */}
+          <div className="flex items-center mb-1">
+            <label htmlFor="seatingRating" className="mr-2 text-gray-700 text-sm">Seating:</label>
+            <select
+              id="seatingRating"
+              name="seatingRating"
+              value={seatingRating === null ? '' : seatingRating}
+              onChange={handleSeatingRatingChange}
+              className="shadow appearance-none border rounded py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+            >
+              <option value="">Select</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
+          </div>
 
-                <div>
-                  <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-1">
-                    Your Review
-                  </label>
-                  <textarea
-                    id="text"
-                    name="text"
-                    value={newReview.text}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B4A43] focus:border-[#5B4A43]"
-                    placeholder="Share your experience..."
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#5B4A43] hover:bg-[#4A3C36] text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
-                >
-                  Submit Review
-                </button>
-              </form>
-            </div>
-
-            {/* Reviews List */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Customer Reviews {reviews.length > 0 && `(${reviews.length})`}
-              </h3>
-
-              {reviews.length > 0 ? (
-                <div className="space-y-6">
-                  {reviews
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .map((review, index) => (
-                      <div key={index} className={`pb-4 ${index < reviews.length - 1 ? 'border-b border-gray-200' : ''}`}>
-                        <div className="flex items-start mb-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                            <span className="text-lg font-medium text-gray-600 uppercase">
-                              {review.user.charAt(0)}
-                            </span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                              <h4 className="font-medium text-gray-900">
-                                {review.user || 'Anonymous'}
-                              </h4>
-                              <span className="text-xs text-gray-500">
-                                {new Date(review.date).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center mt-1 mb-2">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={16}
-                                  className={i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                                />
-                              ))}
-                            </div>
-                            {/* Amenity Ratings */}
-                            {(review.noiseRating || review.seatingRating || review.wifiRating) && (
-                              <div className="flex flex-wrap gap-2 mb-2">
-                                {review.noiseRating && (
-                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                    Noise: {review.noiseRating}/5
-                                  </span>
-                                )}
-                                {review.seatingRating && (
-                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                    Seating: {review.seatingRating}/5
-                                  </span>
-                                )}
-                                {review.wifiRating && (
-                                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                    WiFi: {review.wifiRating}/5
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <p className="text-gray-700 text-sm">{review.text}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">No reviews yet. Be the first to share your experience!</p>
-                </div>
-              )}
-            </div>
+          {/* Wifi Rating */}
+          <div className="flex items-center mb-1">
+            <label htmlFor="wifiRating" className="mr-2 text-gray-700 text-sm">Wifi:</label>
+            <select
+              id="wifiRating"
+              name="wifiRating"
+              value={wifiRating === null ? '' : wifiRating}
+              onChange={handleWifiRatingChange}
+              className="shadow appearance-none border rounded py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
+            >
+              <option value="">Select</option>
+              <option value="5">5 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="2">2 Stars</option>
+              <option value="1">1 Star</option>
+            </select>
           </div>
         </div>
-      </main>
+
+          {/* Review Textarea */}
+          <div className="mb-4">
+            <label htmlFor="text" className="block text-gray-700 text-sm font-bold mb-1">
+              Your Review:
+            </label>
+            <textarea
+              id="text"
+              name="text"
+              value={newReview.text}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm h-24 resize-none"
+              placeholder="Write your review here"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="bg-[#A07855] hover:bg-[#8C6A50] text-white font-semibold py-2 px-4 rounded-md block w-full text-center focus:outline-none focus:ring-2 focus:ring-[#A07855] focus:ring-opacity-50"
+          >
+            Submit Review
+          </button>
+        </form>
+
+        {/* Reviews List */}
+        {reviews.length > 0 ? (
+          <ul className="space-y-6">
+            {reviews.map((review, index) => (
+              <li key={index} className={`${index < reviews.length - 1 ? 'border-b pb-4' : ''}`}>
+                <div className="flex items-start mb-2">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center overflow-hidden">
+                    <span className="text-xl font-semibold text-gray-700">{review.user.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{review.user}</h4>
+                    <div className="flex items-center">
+                      {[...Array(review.rating)].map((_, index) => (
+                        <Star key={index} color="#FFC107" fill="#FFC107" size={16} />
+                      ))}
+                      {[...Array(5 - review.rating)].map((_, index) => (
+                        <Star key={index} color="#FFC107" size={16} />
+                      ))}
+                    </div>
+                    {/* Display Amenity Ratings */}
+                    {review.noiseRating && <div className="text-gray-600 text-xs">Noise: {review.noiseRating}/5</div>}
+                    {review.seatingRating && <div className="text-gray-600 text-xs">Seating: {review.seatingRating}/5</div>}
+                    {review.wifiRating && <div className="text-gray-600 text-xs">Wifi: {review.wifiRating}/5</div>}
+                  </div>
+                </div>
+                <p className="text-gray-700 text-sm">{review.text}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center text-gray-500 py-8">
+            <p>No reviews yet. Be the first to review!</p>
+          </div>
+        )}
+      </div>
     </div>
+
+
+  </div>
   );
 }
+        
 
 export default CafeView;

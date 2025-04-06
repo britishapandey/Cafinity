@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
-import { getAuth } from 'firebase/auth';
 
 function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");
@@ -44,11 +43,11 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
     setNewCafeAttributes({
       BusinessAcceptsCreditCards: cafeCreditCard,
       BikeParking: cafeBikeParking,
-      NoiseLevel: cafeNoiseLevel ? "quiet" : "false",
+      NoiseLevel: cafeNoiseLevel,
       RestaurantsGoodForGroups: cafeGoodForGroups,
       OutdoorSeating: cafeOutdoorSeating,
       DriveThru: cafeDriveThru,
-      WiFi: cafeWiFi ? "free" : "false",
+      WiFi: cafeWiFi,
     });
   }, [
     cafeCreditCard,
@@ -96,10 +95,6 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
       formattedHours[day] = open && close ? `${open}-${close}` : "";
     }
 
-    const auth = getAuth();
-    const user = auth.currentUser;
-    const userId = user ? user.uid : null;
-
     const newCafe = {
       name: newCafeName,
       address: newCafeAddress,
@@ -109,7 +104,6 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
       amenities: newCafeAttributes,
       hours: formattedHours,
       images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'],
-      ownerId: userId,
     };
 
     onSubmitCafe(newCafe);

@@ -88,25 +88,25 @@ const Home = ({ user }) => {
     }
     
     if (filters.creditCard) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BusinessAcceptsCreditCards == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BusinessAcceptsCreditCards !== undefined);
     }
     if (filters.bikeParking) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BikeParking == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.BikeParking !== undefined);
     }
     if (filters.noiseLevel) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.NoiseLevel == "u'quiet'");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.NoiseLevel !== undefined);
     }
     if (filters.goodForGroups) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.RestaurantsGoodForGroups == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.RestaurantsGoodForGroups !== undefined);
     }
     if (filters.outdoorSeating) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.OutdoorSeating == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.OutdoorSeating !== undefined);
     }
     if (filters.driveThru) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru == "True");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.DriveThru !== undefined);
     }
     if (filters.wifi) {
-      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi == "u'free'");
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.attributes?.WiFi !== undefined);
     }
 
     setFilteredCafes(tempFilteredCafes);
@@ -315,7 +315,7 @@ const Home = ({ user }) => {
           </div>
         </div>
       ) : (
-        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} showNav={true}/>
+        <CafeList className="z-0" cafes={filteredCafes} showMap={showMap} />
       )}
     </>
   );

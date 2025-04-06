@@ -16,7 +16,7 @@ function Reviews({
     reviewError
   }){
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Review Form */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>

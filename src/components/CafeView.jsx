@@ -163,18 +163,6 @@ function CafeView() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with back button */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center">
-          <button 
-            onClick={() => window.history.back()}
-            className="text-gray-600 hover:text-gray-900 mr-4"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className="text-xl font-semibold text-gray-900">{cafe.name}</h1>
-        </div>
-      </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Cafe Hero Section */}
@@ -226,9 +214,9 @@ function CafeView() {
         </div>
 
         {/* Cafe Details Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Left Column - Cafe Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
               <p className="text-gray-600 mb-4">
@@ -256,7 +244,7 @@ function CafeView() {
               {/* Hours Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Hours</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {cafe.hours && 
                     ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
                       .map((day) => {

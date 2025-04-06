@@ -257,13 +257,21 @@ function CafeView() {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Hours</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {cafe.hours &&
-                    Object.entries(cafe.hours).map(([day, hours]) => (
-                      <div key={day} className="flex justify-between">
-                        <span className="font-medium text-gray-700">{day}:</span>
-                        <span className="text-gray-600">{formatHours(hours)}</span>
-                      </div>
-                    ))}
+                  {cafe.hours && 
+                    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                      .map((day) => {
+                        if (cafe.hours[day]) {
+                          return (
+                            <div key={day} className="flex justify-between">
+                              <span className="font-medium text-gray-700">{day}:</span>
+                              <span className="text-gray-600">{formatHours(cafe.hours[day])}</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })
+                      .filter(Boolean) 
+                  }
                 </div>
               </div>
 

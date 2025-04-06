@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db, auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Star, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 
 function CafeView() {
@@ -28,6 +28,12 @@ function CafeView() {
         const data = await getDocs(cafesCollectionRef);
         const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setCafeList(filteredData);
+
+         // Find the current cafe and set its reviews
+        const currentCafe = filteredData.find((c) => c.id === id);
+        if (currentCafe && currentCafe.reviews) {
+          setReviews(currentCafe.reviews);
+        }
       } catch (err) {
         console.error(err);
         setError("Failed to load cafe data");
@@ -36,7 +42,7 @@ function CafeView() {
       }
     };
     getCafeList();
-  }, []);
+  }, [id]);
 
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
@@ -90,15 +96,22 @@ function CafeView() {
         noiseRating: noiseRating,
         seatingRating: seatingRating,
         wifiRating: wifiRating,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        userID: currentUser.uid
       };
-      const updatedReviews = [...(reviews || []), reviewToAdd];
-      await updateDoc(cafeDocRef, { reviews: updatedReviews });
-      setReviews(updatedReviews);
+
+      // Use arrayUnion to add the new review without overwriting existing ones
+      await updateDoc(cafeDocRef, {
+        reviews: arrayUnion(reviewToAdd)
+      });
+
+      // Update local state
+      setReviews(prev => [...prev, reviewToAdd]);
       setNewReview({ user: "", rating: 5, text: "" });
       setNoiseRating(null);
       setSeatingRating(null);
       setWifiRating(null);
+      setError(null);
     } catch (error) {
       console.error("Error submitting review:", error);
       setError("Error submitting review: " + error.message);

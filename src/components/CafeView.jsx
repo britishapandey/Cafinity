@@ -23,6 +23,9 @@ function CafeView() {
   const { id } = useParams();
   const cafesCollectionRef = collection(db, "cafes");
 
+  // define the order of days
+  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'];
+
   useEffect(() => {
     const getCafeList = async () => {
       try {
@@ -254,7 +257,9 @@ function CafeView() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Hours</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {cafe.hours &&
-                    Object.entries(cafe.hours).map(([day, hours]) => (
+                    Object.entries(cafe.hours)
+                    .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+                    .map(([day, hours]) => (
                       <div key={day} className="flex justify-between">
                         <span className="font-medium text-gray-700">{day}:</span>
                         <span className="text-gray-600">{formatHours(hours)}</span>

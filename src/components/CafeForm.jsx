@@ -143,7 +143,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
+    <div className="m-6 p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Add a New Cafe</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4">

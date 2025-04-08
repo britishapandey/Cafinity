@@ -50,7 +50,7 @@ function CafeCard({ cafe, onHover, onLeave }) {
 
   return (
     <div 
-      className="w-80 flex-shrink-0 bg-white rounded-lg shadow-lg overflow-hidden m-4 flex flex-col"
+      className="w-80 flex-shrink-0 bg-white rounded-lg shadow-lg overflow-hidden m-4 flex flex-col cursor-pointer"
       onMouseEnter={onHover} // Hover only on the card
       onMouseLeave={onLeave} // Leave only on the card
     >

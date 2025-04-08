@@ -7,6 +7,9 @@ function CafeCard({ cafe, onHover, onLeave }) {
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
 
+  // define the order of days
+  const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'];
+  
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
     const [start, end] = hoursString.split('-');
@@ -107,7 +110,9 @@ function CafeCard({ cafe, onHover, onLeave }) {
               </button>
               {showHours && (
                 <div className="px-4 pb-3 text-sm text-gray-600 bg-white">
-                  {Object.entries(cafe.hours).map(([day, hours]) => (
+                  {Object.entries(cafe.hours)
+                  .sort(([dayA], [dayB]) => DAY_ORDER.indexOf(dayA) - DAY_ORDER.indexOf(dayB))
+                  .map(([day, hours]) => (
                     <div key={day} className="flex justify-between py-1">
                       <span className="font-medium">{day}:</span>
                       <span>{formatHours(hours)}</span>
@@ -120,17 +125,19 @@ function CafeCard({ cafe, onHover, onLeave }) {
         </div>
       </div>
 
-      {/* Fixed Button at Bottom */}
-      <Link to={`/cafe/${cafeId}`} className="block no-underline">
+
+      {isOwner && (<Link to={`/editcafe/${cafeId}`} className="block no-underline">
+
         <div className="p-4 border-t">
           <button
             className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors"
             onClick={(e) => e.stopPropagation()} // Prevent outer div click
           >
-            View Cafe
+            Manage Cafe
           </button>
         </div>
-      </Link>
+      </Link>)}
+
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, Star, User, Search, Settings, CirclePlus, Store } from "lucide-react"; // Added Settings icon for admin/owner
+import { Home, User, CirclePlus, Menu, ArrowRight, Store } from "lucide-react"; // Added Settings icon for admin/owner
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 
@@ -14,37 +14,68 @@ const Navbar = ({ user, userRole }) => {
     }
   };
 
+  const [showSidebar, setShowSidebar] = React.useState(false);
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+  };
+
   return (
-    <div className="bg-[#5B4A43] p-4">
-      <div className="flex justify-between items-center w-full px-8 overflow-x-scroll no-scrollbar">
+    <div className="bg-[#5B4A43]">
+      <div className="flex justify-between items-center w-full py-4 px-8">
         <a className="text-white text-2xl font-bold" href="/">Cafinity</a>
-        {/* Flex container for links/icons */}
         <div className="flex items-center">
-          <Link to="/profile" className="m-4 flex items-center">
-            <User color="#6490E1" />          {/* Show additional options for cafe owners */}
-          </Link>
-          {userRole === "owner" && (
-            <Link to="/business" className="m-4 flex items-center">
-              <Store color="#6490E1" />
-            </Link>
-          )}
-          <Link to="/addcafe" className="m-4 flex items-center">
-            <CirclePlus color="#6490E1" />
-          </Link>
-          {user ? (
-            <button
-              onClick={handleSignOut}
-              className="m-4 text-white flex items-center"
-            >
-              Sign Out
-            </button>
-          ) : (
-            <Link to="/login" className="m-4 flex items-center">
-              <Star color="#6490E1" />
-            </Link>
-          )}
+          {user ? (<button onClick={toggleSidebar} className="text-white p-2">
+            <Menu />
+          </button>) : (
+              <button className="">
+                <Link to="/login" className="flex gap-2 m-0 text-white">
+                  Sign In
+                </Link>
+              </button>
+            )}
         </div>
       </div>
+      {/* Sidebar */}
+      {showSidebar && (
+        <div className={`fixed top-0 min-w-64 max-w-96 h-full bg-[#5B4A43] text-white p-8 z-50 transition-all duration-300 right-0`}>
+          <div className="w-full flex justify-end">
+          <button onClick={toggleSidebar} className="text-white p-2 m-0 mb-4">
+            <ArrowRight/>
+          </button>
+          </div>
+          <ul className="">
+            <li className="mb-4">
+              <Link to="/" className="flex gap-2 text-white">
+                <Home color="#6490E1"/> Home
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link to="/profile" className="flex gap-2 text-white">
+                <User color="#6490E1"/> Profile
+              </Link>
+            </li>
+            <li className="mb-4">
+              <Link to="/addcafe" className="flex gap-2 text-white">
+                <CirclePlus color="#6490E1"/> Add Cafe
+              </Link>
+            </li>
+            {userRole === "owner" && (
+              <li className="mb-4">
+                <Link to="/business" className="flex gap-2 text-white">
+                  <Store color="#6490E1"/> Owner Dashboard
+                </Link>
+              </li>
+            )}
+            {user && (
+              <li className="mb-4">
+                <button onClick={handleSignOut} className="flex gap-2 m-0 mt-4 text-white">
+                  Sign Out
+                </button>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

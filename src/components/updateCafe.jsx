@@ -3,9 +3,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../config/firebase';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 
-function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
+function UpdateCafe({ storage }) { // Add storage as a prop
   const {id} = useParams();
   const [loading, setLoading] = useState(true);
 
@@ -124,6 +124,16 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
       }
     }
   };
+
+  const onSubmitCafe = async (newCafe) => {
+    try {
+      const cafeDoc = doc(db, "cafes", id);
+      await updateDoc(cafeDoc, newCafe);
+      alert("Cafe updated.");
+    } catch (err) {
+      console.error("Error updating cafe:", err);
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -355,6 +365,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
           <button
             type="submit"
             className="w-full bg-green-500 text-white px-4 py-2 hover:bg-green-600"
+            onClick={() => {}}
           >
             Submit Cafe
           </button>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import OpenAI from 'openai';
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 const openai = new OpenAI({
-  apiKey: '', // Ensure your API key is set in your .env file
+  apiKey: OPENAI_API_KEY,
   dangerouslyAllowBrowser: true, // Only for development/testing – do not expose your API key in production!
 });
 

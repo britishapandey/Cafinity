@@ -11,6 +11,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
 
   const [newCafeName, setNewCafeName] = useState("");
   const [newCafeAddress, setNewCafeAddress] = useState("");
+  const [newCafeCity, setNewCafeCity] = useState("");
   const [newCafeState, setNewCafeState] = useState("");
   const [newCafePostalCode, setNewCafePostalCode] = useState("");
   const [cafeCreditCard, setCafeCreditCard] = useState(false);
@@ -60,6 +61,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
           console.log("Document data:", docSnap.data());
           setNewCafeName(docSnap.data().name);
           setNewCafeAddress(docSnap.data().address);
+          setNewCafeCity(docSnap.data().city);
           setNewCafeState(docSnap.data().state);
           setNewCafePostalCode(docSnap.data().postal_code);
           setCafeCreditCard(docSnap.data().attributes.BusinessAcceptsCreditCards);
@@ -141,6 +143,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
     const newCafe = {
       name: newCafeName,
       address: newCafeAddress,
+      city: newCafeCity,
       state: newCafeState,
       postal_code: newCafePostalCode,
       amenities: newCafeAttributes,
@@ -177,7 +180,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">Add a New Cafe</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Editing Your Cafe</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4">
           <input
@@ -185,7 +188,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
             placeholder="Cafe Name"
             value={newCafeName}
             onChange={(e) => setNewCafeName(e.target.value)}
-            className="w-full p-2 border"
+            className=""
             required
           />
           <div className="grid grid-cols-2 gap-4">
@@ -194,7 +197,15 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Address"
               value={newCafeAddress}
               onChange={(e) => setNewCafeAddress(e.target.value)}
-              className="w-full p-2 border"
+              className=""
+              required
+            />
+            <input
+              id="cafe-city"
+              placeholder="City"
+              value={newCafeCity}
+              onChange={(e) => setNewCafeCity(e.target.value)}
+              className=""
               required
             />
             <input
@@ -202,14 +213,14 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="State"
               value={newCafeState}
               onChange={(e) => setNewCafeState(e.target.value)}
-              className="w-full p-2 border"
+              className=""
             />
             <input
               id="cafe-postalcode"
               placeholder="Zip Code"
               value={newCafePostalCode}
               onChange={(e) => setNewCafePostalCode(e.target.value)}
-              className="w-full p-2 border"
+              className=""
             />
           </div>
         </div>
@@ -297,7 +308,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Image URL"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-2 border"
+              className="w-full"
             />
             <button
               onClick={handleImageUrl}
@@ -345,7 +356,7 @@ function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop
             type="submit"
             className="w-full bg-green-500 text-white px-4 py-2 hover:bg-green-600"
           >
-            Add Cafe
+            Submit Cafe
           </button>
           <button
             className={deleteWarning ? "bg-red-500" : ""}

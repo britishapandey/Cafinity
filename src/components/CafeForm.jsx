@@ -6,6 +6,7 @@ import { getAuth } from 'firebase/auth';
 function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");
   const [newCafeAddress, setNewCafeAddress] = useState("");
+  const [newCafeCity, setNewCafeCity] = useState("");
   const [newCafeState, setNewCafeState] = useState("");
   const [newCafePostalCode, setNewCafePostalCode] = useState("");
   const [newCafeRating, setNewCafeRating] = useState(0);
@@ -103,6 +104,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
     const newCafe = {
       name: newCafeName,
       address: newCafeAddress,
+      city: newCafeCity,
       state: newCafeState,
       postal_code: newCafePostalCode,
       stars: newCafeRating,
@@ -150,7 +152,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
             placeholder="Cafe Name"
             value={newCafeName}
             onChange={(e) => setNewCafeName(e.target.value)}
-            className="w-full p-2 border rounded"
+            className=""
             required
           />
           <div className="grid grid-cols-2 gap-4">
@@ -159,7 +161,15 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Address"
               value={newCafeAddress}
               onChange={(e) => setNewCafeAddress(e.target.value)}
-              className="w-full p-2 border rounded"
+              className=""
+              required
+            />
+            <input
+              id="cafe-city"
+              placeholder="City"
+              value={newCafeCity}
+              onChange={(e) => setNewCafeCity(e.target.value)}
+              className=""
               required
             />
             <input
@@ -167,14 +177,14 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="State"
               value={newCafeState}
               onChange={(e) => setNewCafeState(e.target.value)}
-              className="w-full p-2 border rounded"
+              className=""
             />
             <input
               id="cafe-postalcode"
               placeholder="Zip Code"
               value={newCafePostalCode}
               onChange={(e) => setNewCafePostalCode(e.target.value)}
-              className="w-full p-2 border rounded"
+              className=""
             />
           </div>
         </div>
@@ -262,7 +272,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
               placeholder="Image URL"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full"
             />
             <button
               onClick={handleImageUrl}

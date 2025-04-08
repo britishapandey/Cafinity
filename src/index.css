@@ -77,7 +77,7 @@ button:focus-visible {
 input {
   padding: 0.6em 1.2em;
   background: transparent;
-  border: 2px solid #5B4A43;
+  border: 1px solid #5B4A43;
   border-radius: 8px;
   margin: 0.2em;
 }

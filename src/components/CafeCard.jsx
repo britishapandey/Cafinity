@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useMatch } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function CafeCard({ cafe, onHover, onLeave }) {
   const navigate = useNavigate();
   const [showHours, setShowHours] = useState(false);
-  const isOwner = useMatch("/business");
-
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
 
@@ -127,7 +125,9 @@ function CafeCard({ cafe, onHover, onLeave }) {
         </div>
       </div>
 
+
       {isOwner && (<Link to={`/editcafe/${cafeId}`} className="block no-underline">
+
         <div className="p-4 border-t">
           <button
             className="w-full bg-[#6B7AEE] text-white px-4 py-2 m-auto rounded-lg hover:bg-[#5563d3] transition-colors"
@@ -137,6 +137,7 @@ function CafeCard({ cafe, onHover, onLeave }) {
           </button>
         </div>
       </Link>)}
+
     </div>
   );
 }

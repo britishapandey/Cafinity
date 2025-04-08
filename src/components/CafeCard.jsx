@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useMatch } from "react-router-dom";
 
 function CafeCard({ cafe, onHover, onLeave }) {
   const navigate = useNavigate();
   const [showHours, setShowHours] = useState(false);
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
+  const isOwner = useMatch("/business");
 
   // define the order of days
   const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'];

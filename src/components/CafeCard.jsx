@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useMatch } from "react-router-dom";
 
 function CafeCard({ cafe, onHover, onLeave }) {
   const navigate = useNavigate();
   const [showHours, setShowHours] = useState(false);
+  const isOwner = useMatch("/business");
+
   if (!cafe) return null;
   const cafeId = cafe.id || cafe.cafeId;
 

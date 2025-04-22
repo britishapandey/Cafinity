@@ -117,8 +117,22 @@ function CafeList({ cafes, showMap, showNav }) {
               onLeave={handleCafeLeave}
             />
           ))}
+        {showNav && (
+          <ListNavigation
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          showInput={showInput}
+        setShowInput={setShowInput}
+        inputPage={inputPage}
+        setInputPage={setInputPage}
+        handlePageChange={handlePageChange}
+        handleInputSubmit={handleInputSubmit} 
+        pageNumbers={pageNumbers}/>)}
         </div>
       </div>
+
+
 
       {showMap && (
         <div className="w-[400px] h-screen">
@@ -149,19 +163,6 @@ function CafeList({ cafes, showMap, showNav }) {
           </APIProvider>
         </div>
       )}
-
-      { showNav && (
-        <ListNavigation
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-        showInput={showInput}
-        setShowInput={setShowInput}
-        inputPage={inputPage}
-        setInputPage={setInputPage}
-        handlePageChange={handlePageChange}
-        handleInputSubmit={handleInputSubmit} 
-        pageNumbers={pageNumbers}/>)}
     </div>
   );
 }

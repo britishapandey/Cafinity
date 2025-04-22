@@ -17,7 +17,7 @@ function ListNavigation({ totalPages, currentPage, setCurrentPage, showInput, se
       };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
+        <div className="fixed bottom-0 bg-white shadow-lg p-4 w-full">
         <div className="flex justify-center items-center gap-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}

@@ -16,7 +16,7 @@ const Navbar = ({ user, userRole }) => {
 
   return (
     <div className="bg-[#5B4A43] p-4">
-      <div className="flex justify-between items-center w-full px-8 overflow-x-scroll no-scrollbar">
+      <div className="flex justify-between items-center w-full px-8">
         <a className="text-white text-2xl font-bold" href="/">Cafinity</a>
         {/* Flex container for links/icons */}
         <div className="flex items-center">

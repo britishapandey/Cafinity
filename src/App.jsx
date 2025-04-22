@@ -39,13 +39,9 @@ function App() {
       console.error(err);
     }
   };
-  useEffect(() => {
-    getCafeList(); // Fetch data on initial load
-  }, []); 
-
-  const getUserRole = async () => {
+  const getUserRole = async (currentUser) => {
     if (user) {
-      const userDoc = doc(db, "profiles", user.uid); // Assuming you have a users collection
+      const userDoc = doc(db, "profiles", currentUser.uid); // Assuming you have a users collection
       const docSnap = await getDoc(userDoc);
       if (docSnap) {
         setUserRole(docSnap.data().role); // Set user role based on Firestore data
@@ -56,14 +52,14 @@ function App() {
     }
   }
 
-
   // Monitor user authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      getUserRole(); // Fetch user role when auth state changes
+      getUserRole(currentUser); // Fetch user role when auth state changes
       setIsAuthLoading(false); // Set loading to false once we have the auth state
     });
+    getCafeList();
     return unsubscribe; // Cleanup subscription
   }, []);
 

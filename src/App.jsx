@@ -17,6 +17,7 @@ import CafeForm from './components/cafes/CafeForm';
 import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
+import UserFeedback from './components/UserFeedback';
 
 
 function App() {
@@ -187,6 +188,12 @@ function App() {
         <Route
           path="/editcafe/:id"
           element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
+        />
+
+        {/* route */}
+        <Route
+          path="/userfeedback"
+          element={user ? <UserFeedback /> : <Navigate to="/login" />}
         />
 
       </Routes>

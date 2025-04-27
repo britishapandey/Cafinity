@@ -59,6 +59,11 @@ const Navbar = ({ user, userRole }) => {
                 <CirclePlus color="#6490E1"/> Add Cafe
               </Link>
             </li>
+            <li className="mb-4">
+              <Link to="/userfeedback" className="flex gap-2 text-white">
+                <CirclePlus color="#6490E1"/> User Feedback
+              </Link>
+            </li>
             {userRole === "owner" && (
               <li className="mb-4">
                 <Link to="/business" className="flex gap-2 text-white">

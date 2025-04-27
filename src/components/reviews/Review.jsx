@@ -24,7 +24,7 @@ function Reviews({
         const reportedReview = {
           reportedUser: review.user || "Anonymous",
           reviewContent: review.text,
-          reason: `Flagged by ${auth.currentUser}`,
+          reason: `Flagged by ${auth.currentUser.displayName}`,
           dateReported: new Date().toISOString()
         };
         

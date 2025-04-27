@@ -288,6 +288,7 @@ function Profile({ setUserRole }) {
                     >
                       <option value="user">Regular User</option>
                       <option value="owner">Cafe Owner</option>
+                      <option value="admin">Administrator</option>
                     </select>
                   </div>
 

@@ -17,6 +17,7 @@ import CafeForm from './components/cafes/CafeForm';
 import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
+import AdminPanel from './components/admin/AdminPanel';
 
 
 function App() {
@@ -142,6 +143,11 @@ function App() {
           path="/profile"
           element={user ? 
             <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/admin"
+          element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
         />
 
         <Route

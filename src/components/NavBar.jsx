@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, User, CirclePlus, Menu, ArrowRight, Store } from "lucide-react"; // Added Settings icon for admin/owner
+import { Home, User, CirclePlus, Menu, ArrowRight, Store, BarChart } from "lucide-react"; // Added BarChart for admin
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 
@@ -63,6 +63,13 @@ const Navbar = ({ user, userRole }) => {
               <li className="mb-4">
                 <Link to="/business" className="flex gap-2 text-white">
                   <Store color="#6490E1"/> Owner Dashboard
+                </Link>
+              </li>
+            )}
+            {userRole === "admin" && (
+              <li className="mb-4">
+                <Link to="/admin" className="flex gap-2 text-white">
+                  <BarChart color="#6490E1"/> Admin Panel
                 </Link>
               </li>
             )}

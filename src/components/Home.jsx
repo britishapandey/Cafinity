@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
 import { collection, getDocs } from "firebase/firestore";
-import CafeList from "./CafeList";
+import CafeList from "./cafes/CafeList";
 import { ArrowUpDown, Filter } from "lucide-react";
 import { useFloating, useMergeRefs, useInteractions, useClick, useDismiss } from "@floating-ui/react";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";

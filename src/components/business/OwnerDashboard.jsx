@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db, storage } from '../config/firebase';
+import { auth, db, storage } from '../../config/firebase';
 import { doc, getDoc, setDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
-import CafeList from './CafeList';
+import CafeList from '../cafes/CafeList';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

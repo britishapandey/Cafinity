@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { db, auth } from '../config/firebase';
+import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
-import Reviews from './Review.jsx';
+import Reviews from "../reviews/Review.jsx"
 
 function CafeView() {
   const [cafeList, setCafeList] = useState([]);

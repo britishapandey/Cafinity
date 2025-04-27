@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CafeCard from './CafeCard'; // Import the existing CafeCard component
+import CafeCard from '../cafes/CafeCard'; // Import the existing CafeCard component
 
 function CafeRecommender() {
   const [cafes, setCafes] = useState([]);

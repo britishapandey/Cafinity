@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "../config/firebase";
+import { auth, db } from "../../config/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

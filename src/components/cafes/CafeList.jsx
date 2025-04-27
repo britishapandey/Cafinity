@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CafeCard from "./CafeCard";
-import ListNavigation from "./ListNavigation";
+import ListNavigation from "../search/ListNavigation";
 import { APIProvider, Map, useMap, AdvancedMarker } from "@vis.gl/react-google-maps";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;

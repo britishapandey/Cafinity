@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { db } from '../config/firebase';
+import { db } from '../../config/firebase';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 
 function UpdateCafe({ onSubmitCafe, storage }) { // Add storage as a prop

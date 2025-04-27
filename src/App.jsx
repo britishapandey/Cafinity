@@ -4,19 +4,19 @@ import { addDoc, collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import Home from './components/Home';
-import Login from './components/login';
-import Register from './components/Register';
+import Login from './components/auth/login';
+import Register from './components/auth/register';
 import Navbar from './components/NavBar'; // Updated NavBar import
 import './index.css';
-import Profile from './components/profile';
-import SearchFilter from './components/SearchFilter';
-import CafeList from './components/CafeList'; // Import CafeList (if you have a separate component)
-import OwnerDashboard from './components/OwnerDashboard';
-import CafeCard from './components/CafeCard';
-import CafeForm from './components/CafeForm';
-import CafeView from './components/CafeView'; 
-import UpdateCafe from './components/updateCafe';
-import CafeRecommender from './components/CafeRecommender'; 
+import Profile from './components/user/profile';
+import SearchFilter from './components/search/SearchFilter';
+import CafeList from './components/cafes/CafeList'; // Import CafeList (if you have a separate component)
+import OwnerDashboard from './components/business/OwnerDashboard';
+import CafeCard from './components/cafes/CafeCard';
+import CafeForm from './components/cafes/CafeForm';
+import CafeView from './components/cafes/CafeView';
+import UpdateCafe from './components/cafes/updateCafe';
+import CafeRecommender from './components/reccomendations/CafeRecommender'; 
 
 
 function App() {

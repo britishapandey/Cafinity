@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { setDoc, doc, serverTimestamp, getDoc } from "firebase/firestore";
-import { auth, db, googleProvider } from "../config/firebase";
+import { auth, db, googleProvider } from "../../config/firebase";
 import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {

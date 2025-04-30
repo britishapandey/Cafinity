@@ -1,16 +1,37 @@
 // src/components/admin/FeedbackList.jsx
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
+import { db, auth, collection, addDoc } from '../../config/firebase.js';
 
 function FeedbackList({ reviews }) {
   const [expandedReview, setExpandedReview] = useState(null);
-  
+
+  // flag review for later consideration
+  const handleReportReview = async (review) => {
+    try {
+      const reportsRef = collection(db, "reported");
+      const reportedReview = {
+        reportedUser: review.user || "Anonymous",
+        reviewContent: review.text,
+        reason: `Flagged by ${auth.currentUser.displayName}`,
+        dateReported: new Date().toISOString()
+      };
+      
+      await addDoc(reportsRef, reportedReview);
+      alert("Report sent to admin successfully.")
+    } catch (err) {
+      console.error("Error reporting review:", err);
+      alert("Could not report review. Please try again later.");
+    }
+  }
+
   const toggleReview = (index) => {
     setExpandedReview(expandedReview === index ? null : index);
   };
 
   return (
     <div className="space-y-4">
+      
       {reviews.length === 0 ? (
         <p className="text-center py-8 text-gray-500">No reviews found with the selected filter.</p>
       ) : (
@@ -22,7 +43,7 @@ function FeedbackList({ reviews }) {
           >
             <div className="flex justify-between items-start cursor-pointer">
               <div>
-                <h3 className="font-medium">{review.cafeName}</h3>
+                <a className="font-medium text-[#B07242]" href={'/cafe/'+review.cafeId}>{review.cafeName}</a>
                 <p className="text-sm text-gray-500">By {review.user || 'Anonymous'} • {new Date(review.date).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center">
@@ -67,7 +88,8 @@ function FeedbackList({ reviews }) {
                   <button className="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
                     Respond
                   </button>
-                  <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">
+                  <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                    onClick={() => handleReportReview(review)}>
                     Flag
                   </button>
                 </div>

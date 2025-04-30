@@ -365,6 +365,7 @@ function CafeView() {
             handleReviewSubmit={handleReviewSubmit}
             currentUser={currentUser}
             reviewError={reviewError}
+            cafe={cafe}
           />
         </div>
       </main>

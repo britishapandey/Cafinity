@@ -15,7 +15,8 @@ function Reviews({
     setWifiRating,
     handleReviewSubmit,
     currentUser,
-    reviewError
+    reviewError,
+    cafe
   }){
 
     const handleReportReview = async (review) => {
@@ -25,7 +26,9 @@ function Reviews({
           reportedUser: review.user || "Anonymous",
           reviewContent: review.text,
           reason: `Flagged by ${auth.currentUser.displayName}`,
-          dateReported: new Date().toISOString()
+          dateReported: new Date().toISOString(),
+          cafeId: cafe.id,
+          cafeName: cafe.name
         };
         
         await addDoc(reportsRef, reportedReview);

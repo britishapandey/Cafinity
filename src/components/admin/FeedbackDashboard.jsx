@@ -5,6 +5,7 @@ import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import FeedbackChart from './FeedbackChart';
 import FeedbackList from './FeedbackList';
 import SentimentSummary from './SentimentSummary';
+import ReportedReviews from './ReportedReviews';
 
 function FeedbackDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -17,7 +18,7 @@ function FeedbackDashboard() {
     negative: 0
   });
   const [reportedReviews, setReportedReviews] = useState([]);
-
+  
   // Fetch all cafes and their reviews
   useEffect(() => {
     const fetchData = async () => {
@@ -54,11 +55,7 @@ function FeedbackDashboard() {
           ...doc.data()
         }));
         setReportedReviews(reports);
-        console.log(reports);
         
-        // Simple sentiment analysis
-        const sentiment = analyzeSentiment(allReviews);
-        setSentimentData(sentiment);
       } catch (error) {
         console.error("Error fetching feedback data:", error);
       } finally {
@@ -130,18 +127,7 @@ function FeedbackDashboard() {
           
           <FeedbackList reviews={getFilteredReviews()} />
         </div>
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Flagged Reviews</h2>
-          <div>
-          {reportedReviews && reportedReviews.map((report) => (
-              <div key={report.uid} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow mb-4">
-                  <h3>User: {report.reportedUser}</h3>
-                  <p>Review: {report.reviewContent}</p>
-                  <p>Reason: {report.reason}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ReportedReviews reviews={reportedReviews}/>
       </div>
     </div>
     

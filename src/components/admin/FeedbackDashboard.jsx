@@ -16,39 +16,7 @@ function FeedbackDashboard() {
     neutral: 0,
     negative: 0
   });
-  const [reportedReviews, setReportedReviews] = useState([
-    {
-      "dateReported": "2025-04-27T04:18:04.626Z",
-      "id": "BpUiUfWq5GGvQyVOmtgF",
-      "reason": "Flagged by Sinnamon Bunnii",
-      "reportedUser": "Anonymous",
-      "reviewContent": "sdfsdcSDVSDv"
-    },
-    {
-      "dateReported": {
-        "seconds": 1745650800,
-        "nanoseconds": 297000000
-      },
-      "id": "K5lXkrYmlAdqAPG4lhuj",
-      "reason": "Flagged by user",
-      "reportedUser": "jubby",
-      "reviewContent": "BARKABKARKKABRK GRGRR RBARK"
-    },
-    {
-      "dateReported": "2025-04-27T04:16:22.180Z",
-      "id": "aERWqhQb1fn0fSXGqr4l",
-      "reason": "Flagged by [object Object]",
-      "reportedUser": "jubby",
-      "reviewContent": "test"
-    },
-    {
-      "dateReported": "2025-04-27T04:17:33.890Z",
-      "id": "z5L21UqyHWekUMbxp58w",
-      "reason": "Flagged by [object Object]",
-      "reportedUser": "Anonymous",
-      "reviewContent": "sdfsdcSDVSDv"
-    }
-  ]);
+  const [reportedReviews, setReportedReviews] = useState([]);
 
   // Fetch all cafes and their reviews
   useEffect(() => {
@@ -101,22 +69,7 @@ function FeedbackDashboard() {
     fetchData();
   }, []);
 
-  // Simple sentiment analysis function
-  const analyzeSentiment = (reviews) => {
-    const sentiment = { positive: 0, neutral: 0, negative: 0 };
-    
-    reviews.forEach(review => {
-      if (review.rating >= 4) {
-        sentiment.positive++;
-      } else if (review.rating >= 3) {
-        sentiment.neutral++;
-      } else {
-        sentiment.negative++;
-      }
-    });
-    
-    return sentiment;
-  };
+
 
   // Filter reviews based on selection
   const getFilteredReviews = () => {
@@ -142,12 +95,6 @@ function FeedbackDashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <SentimentSummary sentimentData={sentimentData} />
-        <div className="md:col-span-2">
-          <FeedbackChart reviews={reviews} cafes={cafes} />
-        </div>
-      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6 md:col-span-2">

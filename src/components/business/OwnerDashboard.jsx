@@ -104,21 +104,23 @@ const OwnerDashboard = () => {
 
     return(
         <>
+          <h1 className="text-2xl lg:text-3xl font-bold m-4 lg:m-8 mb-0">{ownerName}'s Business Dashboard</h1>
           <div className="lg:flex my-6 mx-4 md:mx-12">
-            <h1 className="text-3xl font-bold mb-8">{ownerName}'s Business Dashboard</h1>
             <div className="lg:mr-8">
               <h2 className="text-xl font-bold">Your Cafes ({cafes.length})</h2>
               <div>
                 <CafeList cafes={cafes}/>
               </div>
             </div>
+            <div className="w-full">
             <h2 className="text-xl font-bold mb-4">Your Analytics</h2>
-              <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
                 <SentimentSummary sentimentData={sentimentData} />
                 <div className="md:col-span-2">
                   <FeedbackChart reviews={reviews} cafes={cafes} />
                 </div>
               </div>
+            </div>  
           </div>
         </>
     )

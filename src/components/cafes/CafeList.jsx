@@ -106,7 +106,7 @@ function CafeList({ cafes, showMap, showNav }) {
   const pageNumbers = window.innerWidth > 768 ? getPageNumbers() : getPageNumbers().slice(0, 3).concat("...").concat(totalPages);
 
   return (
-    <div className="flex flex-row h-screen relative pb-20 gap-4">
+    <div className="flex flex-row max-h-screen pb-20 gap-4">
       <div className={`flex-1 overflow-y-auto pr-4 ${showMap ? "" : "w-full"}`}>
         <div className="flex flex-wrap gap-4 justify-center">
           {currentCafes.map((cafe) => (

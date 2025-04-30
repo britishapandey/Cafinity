@@ -37,6 +37,7 @@ function CafeView() {
         const currentCafe = filteredData.find((c) => c.id === id);
         if (currentCafe && currentCafe.reviews) {
           setReviews(currentCafe.reviews);
+      
         }
       } catch (err) {
         console.error(err);
@@ -119,6 +120,19 @@ function CafeView() {
       // Use arrayUnion to add the new review without overwriting existing ones
       await updateDoc(cafeDocRef, {
         reviews: arrayUnion(reviewToAdd)
+      });
+
+      // updating review count and star upon (re)loading the page
+      const currentCafe = filteredData.find((c) => c.id === id);
+      await updateDoc(cafeDocRef, {
+        review_count: currentCafe.reviews.length
+      });
+
+      const totalRating = currentCafe.reviews.length > 0? currentCafe.reviews.reduce((sum, review) => sum + review.rating, 0) : 0;
+      const starNum = (totalRating / currentCafe.reviews.length).toFixed(1); // Return average rounded to 1 decimal place
+
+      await updateDoc(cafeDocRef, {
+        stars: starNum
       });
 
       // Update local state

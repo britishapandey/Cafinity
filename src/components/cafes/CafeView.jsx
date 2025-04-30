@@ -123,6 +123,8 @@ function CafeView() {
       });
 
       // updating review count and star upon (re)loading the page
+      const data = await getDocs(cafesCollectionRef);
+      const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       const currentCafe = filteredData.find((c) => c.id === id);
       await updateDoc(cafeDocRef, {
         review_count: currentCafe.reviews.length

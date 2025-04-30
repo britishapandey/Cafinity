@@ -237,7 +237,7 @@ function CafeView() {
                   </span>
                 </div>
                 <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  {cafe.categories.split(', ')[0]}
+                  {cafe.categories && cafe.categories.split(', ')[0]}
                 </span>
               </div>
 

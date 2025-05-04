@@ -1,5 +1,7 @@
 import React from 'react';
-import { Star } from 'lucide-react';
+import { FlagIcon, Star } from 'lucide-react';
+import { addDoc, collection } from 'firebase/firestore';
+import { db, auth } from '../../config/firebase.js';
 
 function Reviews({
     reviews,
@@ -13,8 +15,31 @@ function Reviews({
     setWifiRating,
     handleReviewSubmit,
     currentUser,
-    reviewError
+    reviewError,
+    cafe
   }){
+
+    const handleReportReview = async (review) => {
+      try {
+        const reportsRef = collection(db, "reported");
+        const reportedReview = {
+          reportedUser: review.user || "Anonymous",
+          reviewContent: review.text,
+          reason: `Flagged by ${auth.currentUser.displayName}`,
+          dateReported: new Date().toISOString(),
+          cafeId: cafe.id,
+          cafeName: cafe.name,
+          reviewId: review.id // include the review ID for reference
+        };
+        
+        await addDoc(reportsRef, reportedReview);
+        alert("Report sent to admin successfully.")
+      } catch (err) {
+        console.error("Error reporting review:", err);
+        alert("Could not report review. Please try again later.");
+      }
+    }
+
     return (
         <div className="space-y-6 lg:col-span-2">
           {/* Review Form */}
@@ -22,20 +47,6 @@ function Reviews({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
             {reviewError && <p className="text-red-500 mb-4">{reviewError}</p>}
             <form onSubmit={handleReviewSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Name (optional)
-                </label>
-                <input
-                  type="text"
-                  id="user"
-                  name="user"
-                  value={newReview.user}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B4A43] focus:border-[#5B4A43]"
-                  placeholder="Anonymous"
-                />
-              </div>
     
               <div>
                 <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
@@ -142,7 +153,7 @@ function Reviews({
                 {reviews
                   .sort((a, b) => new Date(b.date) - new Date(a.date))
                   .map((review, index) => (
-                    <div key={index} className={`pb-4 ${index < reviews.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                    <div key={index} className={`pb-4 relative group ${index < reviews.length - 1 ? 'border-b border-gray-200' : ''}`}>
                       <div className="flex items-start mb-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                           <span className="text-lg font-medium text-gray-600 uppercase">
@@ -189,6 +200,11 @@ function Reviews({
                           <p className="text-gray-700 text-sm">{review.text}</p>
                         </div>
                       </div>
+                      <button className="absolute bottom-0 right-0 group-hover:opacity-100 opacity-0 transition-opacity ease-in-out p-0 bg-white border-none"
+                          onClick={() => handleReportReview(review)}>
+                          <FlagIcon 
+                            className="text-red-500 cursor-pointer m-0"/>
+                      </button>
                     </div>
                   ))}
               </div>

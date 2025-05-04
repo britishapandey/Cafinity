@@ -12,11 +12,11 @@ import Profile from './components/user/profile';
 import SearchFilter from './components/search/SearchFilter';
 import CafeList from './components/cafes/CafeList'; // Import CafeList (if you have a separate component)
 import OwnerDashboard from './components/business/OwnerDashboard';
-import CafeCard from './components/cafes/CafeCard';
 import CafeForm from './components/cafes/CafeForm';
 import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
+import AdminPanel from './components/admin/AdminPanel';
 
 
 function App() {
@@ -43,27 +43,34 @@ function App() {
     getCafeList(); // Fetch data on initial load
   }, []); 
 
-  const getUserRole = async () => {
-    if (user) {
-      const userDoc = doc(db, "profiles", user.uid); // Assuming you have a users collection
-      const docSnap = await getDoc(userDoc);
-      if (docSnap) {
-        setUserRole(docSnap.data().role); // Set user role based on Firestore data
-        console.log("User role:", docSnap.data().role);
-      } else {
-        console.log("No such document!");
-      }
-    }
-  }
-
-
   // Monitor user authentication state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      getUserRole(); // Fetch user role when auth state changes
-      setIsAuthLoading(false); // Set loading to false once we have the auth state
+
+      // only attempt to get user role if there is a current user
+      if (currentUser) {
+        try {
+          const userDoc = doc(db, "profiles", currentUser.uid);
+          const docSnap = await getDoc(userDoc);
+          if (docSnap.exists()) {
+            setUserRole(docSnap.data().role);
+            console.log("User role:", docSnap.data().role);
+          } else {
+            console.log("No such document!");
+            setUserRole("user"); // default role
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          setUserRole("user"); // default role on error
+        }
+      } else {
+        setUserRole(""); // reset role when logged out
+      }
+
+      setIsAuthLoading(false);
     });
+
     return unsubscribe; // Cleanup subscription
   }, []);
 
@@ -142,6 +149,11 @@ function App() {
           path="/profile"
           element={user ? 
             <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/admin"
+          element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
         />
 
         <Route

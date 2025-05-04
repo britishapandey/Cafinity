@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import Reviews from "../reviews/Review.jsx"
 
@@ -32,12 +32,19 @@ function CafeView() {
         const data = await getDocs(cafesCollectionRef);
         const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setCafeList(filteredData);
-
-         // Find the current cafe and set its reviews
+  
+        // Find the current cafe
         const currentCafe = filteredData.find((c) => c.id === id);
-        if (currentCafe && currentCafe.reviews) {
-          setReviews(currentCafe.reviews);
-      
+        if (currentCafe) {
+          // Fetch reviews from subcollection
+          const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+          const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+          const reviewsData = reviewsSnapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id // Include the review ID
+          }));
+          
+          setReviews(reviewsData);
         }
       } catch (err) {
         console.error(err);
@@ -98,45 +105,31 @@ function CafeView() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-
+  
     if(!currentUser) {
       setError("Please sign in to submit a review");
       return;
     }
-
+  
     try {
-      const cafeDocRef = doc(db, "cafes", id);
+      const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
       const reviewToAdd = {
-        user: newReview.user || "Anonymous",
+        user: currentUser.displayName || "Anonymous", // Use displayName instead of name
+        userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         text: newReview.text,
         noiseRating: noiseRating,
         seatingRating: seatingRating,
         wifiRating: wifiRating,
-        date: new Date().toISOString(),
-        userID: currentUser.uid
+        date: new Date().toISOString()
       };
-
-      // Use arrayUnion to add the new review without overwriting existing ones
-      await updateDoc(cafeDocRef, {
-        reviews: arrayUnion(reviewToAdd)
-      });
-
-      // updating review count and star upon (re)loading the page
-      const data = await getDocs(cafesCollectionRef);
-      const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      const currentCafe = filteredData.find((c) => c.id === id);
-      await updateDoc(cafeDocRef, {
-        review_count: currentCafe.reviews.length
-      });
-
-      const totalRating = currentCafe.reviews.length > 0? currentCafe.reviews.reduce((sum, review) => sum + review.rating, 0) : 0;
-      const starNum = (totalRating / currentCafe.reviews.length).toFixed(1); // Return average rounded to 1 decimal place
-
-      await updateDoc(cafeDocRef, {
-        stars: starNum
-      });
-
+  
+      // Add review to subcollection
+      await addDoc(reviewsCollectionRef, reviewToAdd);
+  
+      // Update review count and stars in the cafe document
+      await updateCafeRatingStats(id);
+  
       // Update local state
       setReviews(prev => [...prev, reviewToAdd]);
       setNewReview({ user: "", rating: 5, text: "" });
@@ -145,9 +138,31 @@ function CafeView() {
       setWifiRating(null);
       setError(null);
       setReviewError(null);
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      setReviewError("Error submitting review: " + error.message);
+    } catch (err) { // Fix: use err instead of error for the caught exception
+      console.error("Error submitting review:", err);
+      setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
+    }
+  };
+
+  const updateCafeRatingStats = async (cafeId) => {
+    try {
+      const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+      const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+      const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+      
+      const cafeDocRef = doc(db, "cafes", cafeId);
+      
+      // Calculate average rating
+      const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+      const averageRating = reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+      
+      // Update cafe document with new stats
+      await updateDoc(cafeDocRef, {
+        review_count: reviews.length,
+        stars: parseFloat(averageRating)
+      });
+    } catch (err) {
+      console.error("Error updating cafe rating stats:", err);
     }
   };
 

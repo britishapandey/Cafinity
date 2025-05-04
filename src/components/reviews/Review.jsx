@@ -28,7 +28,8 @@ function Reviews({
           reason: `Flagged by ${auth.currentUser.displayName}`,
           dateReported: new Date().toISOString(),
           cafeId: cafe.id,
-          cafeName: cafe.name
+          cafeName: cafe.name,
+          reviewId: review.id // include the review ID for reference
         };
         
         await addDoc(reportsRef, reportedReview);
@@ -46,20 +47,6 @@ function Reviews({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
             {reviewError && <p className="text-red-500 mb-4">{reviewError}</p>}
             <form onSubmit={handleReviewSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Name (optional)
-                </label>
-                <input
-                  type="text"
-                  id="user"
-                  name="user"
-                  value={newReview.user}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B4A43] focus:border-[#5B4A43]"
-                  placeholder="Anonymous"
-                />
-              </div>
     
               <div>
                 <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">

@@ -6,23 +6,49 @@ function FeedbackList({ reviews }) {
     const [expandButtons, handleExpandButtons] = useState(null);
     const toggleButtons = (index) => {
         handleExpandButtons(expandButtons === index ? null : index);
-      };
+    };
 
-    const handleDeleteReview = async (cafeId, review) => {
-      try {
-        // ensuring deletion from both reported reviews and cafe reviews
+    const handleDeleteReview = async (cafeId, reviewId) => {
+        try {
+            // Delete from the reviews subcollection
+            const reviewDocRef = doc(db, "cafes", cafeId, "reviews", reviewId);
+            await deleteDoc(reviewDocRef);
+            
+            // Delete from reported collection
+            const reportDocRef = doc(db, "reported", review.id);
+            await deleteDoc(reportDocRef);
+            
+            // Update cafe rating stats
+            await updateCafeRatingStats(cafeId);
+            
+            alert("Review deleted successfully.");
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            alert("Failed to delete the review. Please try again.");
+        }
+    };
+
+    // Add this function to update cafe stats after deleting a review
+    const updateCafeRatingStats = async (cafeId) => {
+        try {
+        const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+        const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        
         const cafeDocRef = doc(db, "cafes", cafeId);
-        const reportDocRef = await doc(db, "reported", review.id);
+        
+        // Calculate average rating
+        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        const averageRating = reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+        
+        // Update cafe document with new stats
         await updateDoc(cafeDocRef, {
-          reviews: arrayRemove(review),
+            review_count: reviews.length,
+            stars: parseFloat(averageRating)
         });
-        await deleteDoc(reportDocRef);
-    
-        alert("Review deleted successfully.");
-      } catch (error) {
-        console.error("Error deleting review:", error);
-        alert("Failed to delete the review. Please try again.");
-      }
+        } catch (error) {
+        console.error("Error updating cafe rating stats:", error);
+        }
     };
 
     const handleRemoveFlag = async (review) => {

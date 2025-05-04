@@ -2,9 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../config/firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import FeedbackChart from './FeedbackChart';
 import FeedbackList from './FeedbackList';
-import SentimentSummary from './SentimentSummary';
 import ReportedReviews from './ReportedReviews';
 
 function FeedbackDashboard() {
@@ -33,16 +31,17 @@ function FeedbackDashboard() {
         
         // Collect all reviews from all cafes
         let allReviews = [];
-        cafesData.forEach(cafe => {
-          if (cafe.reviews && Array.isArray(cafe.reviews)) {
-            const cafeReviews = cafe.reviews.map(review => ({
-              ...review,
-              cafeName: cafe.name,
-              cafeId: cafe.id
-            }));
-            allReviews = [...allReviews, ...cafeReviews];
-          }
-        });
+        for (const cafe of cafesData) {
+          const reviewsCollectionRef = collection(db, "cafes", cafe.id, "reviews");
+          const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+          const cafeReviews = reviewsSnapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id, // include the review ID
+            cafeName: cafe.name,
+            cafeId: cafe.id
+          }));
+          allReviews = [...allReviews, ...cafeReviews];
+        }
         
         // Sort reviews by date (newest first)
         allReviews.sort((a, b) => new Date(b.date) - new Date(a.date));

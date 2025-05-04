@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db, storage } from '../../config/firebase';
+import { auth, db } from '../../config/firebase';
 import { doc, getDoc, setDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import CafeList from '../cafes/CafeList';
 import SentimentSummary from '../admin/SentimentSummary';
@@ -56,7 +56,7 @@ const OwnerDashboard = () => {
     return sentiment;
   };
 
-      // Fetch all cafes and their reviews
+  // Fetch all cafes and their reviews
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
@@ -73,18 +73,19 @@ const OwnerDashboard = () => {
         })).filter((cafe) => cafe.ownerId === user.uid);
         setCafes(cafesData);
         
-        // Collect all reviews from all cafes
+        // Collect all reviews from all owner's cafes
         let allReviews = [];
-        cafesData.forEach(cafe => {
-          if (cafe.reviews && Array.isArray(cafe.reviews)) {
-            const cafeReviews = cafe.reviews.map(review => ({
-              ...review,
-              cafeName: cafe.name,
-              cafeId: cafe.id
-            }));
-            allReviews = [...allReviews, ...cafeReviews];
-          }
-        });
+        for (const cafe of cafesData) {
+          const reviewsCollectionRef = collection(db, "cafes", cafe.id, "reviews");
+          const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+          const cafeReviews = reviewsSnapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id,
+            cafeName: cafe.name,
+            cafeId: cafe.id
+          }));
+          allReviews = [...allReviews, ...cafeReviews];
+        }
         
         // Sort reviews by date (newest first)
         allReviews.sort((a, b) => new Date(b.date) - new Date(a.date));

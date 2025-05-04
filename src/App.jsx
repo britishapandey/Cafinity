@@ -17,6 +17,7 @@ import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
 import AdminPanel from './components/admin/AdminPanel';
+import { NotificationsProvider } from './context/NotificationsContext';
 
 
 function App() {
@@ -111,100 +112,100 @@ function App() {
   }
 
   return (
-    <div>
-      <header>
-      {/* Pass the user state to the Navbar */}
-      <Navbar user={user} userRole={userRole}/>
-      </header>
+    <NotificationsProvider>
+      <div>
+        <header>
+        {/* Pass the user state to the Navbar */}
+        <Navbar user={user} userRole={userRole}/>
+        </header>
 
-      <Routes>
-        {/* Home route - visible only to authenticated users */}
-        <Route
-          path="/"
-          element={
-            user ? (
-              <>
-                <Home user={user}/>
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Login route */}
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" /> : <Login />}
-        />
-
-        {/* Register route */}
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <Register />}
-        />
-
-        {/* Profile route - visible only to authenticated users */}
-        <Route
-          path="/profile"
-          element={user ? 
-            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/admin"
-          element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
-        />
-
-        <Route
-          path="/search"
-          element={
-            user ? (
-              <>
-                <SearchFilter onSearch={handleSearchSubmit} />
-                <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-
-        {/* Cafe view route */}
-        <Route
-          path="/cafe/:id"
-          element={
-            <CafeView/> 
-          } 
-        />
-        <Route
-          path="/caferecommender"
-          element={user ? <CafeRecommender /> : <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/business"
-          element={<OwnerDashboard />}
+        <Routes>
+          {/* Home route - visible only to authenticated users */}
+          <Route
+            path="/"
+            element={
+              user ? (
+                <>
+                  <Home user={user}/>
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
 
-        <Route 
-          path="/addcafe"
-          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+          {/* Login route */}
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login />}
+          />
 
-        <Route
-          path="/cafe/:cafeId"
-          element={user ? <CafeView /> : <Navigate to="/login" />}
-        />
+          {/* Register route */}
+          <Route
+            path="/register"
+            element={user ? <Navigate to="/" /> : <Register />}
+          />
 
-        <Route
-          path="/editcafe/:id"
-          element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
-        />
+          {/* Profile route - visible only to authenticated users */}
+          <Route
+            path="/profile"
+            element={user ? 
+              <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+          />
 
-      </Routes>
+          <Route
+            path="/admin"
+            element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
+          />
 
+          <Route
+            path="/search"
+            element={
+              user ? (
+                <>
+                  <SearchFilter onSearch={handleSearchSubmit} />
+                  <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
 
-    </div>
+          {/* Cafe view route */}
+          <Route
+            path="/cafe/:id"
+            element={
+              <CafeView/> 
+            } 
+          />
+          <Route
+            path="/caferecommender"
+            element={user ? <CafeRecommender /> : <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/business"
+            element={<OwnerDashboard />}
+            />
+
+          <Route 
+            path="/addcafe"
+            element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+
+          <Route
+            path="/cafe/:cafeId"
+            element={user ? <CafeView /> : <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/editcafe/:id"
+            element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
+          />
+
+        </Routes>
+      </div>
+    </NotificationsProvider>
   );
 }
 

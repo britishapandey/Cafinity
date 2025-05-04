@@ -126,6 +126,12 @@ function CafeView() {
   
       // Add review to subcollection
       await addDoc(reviewsCollectionRef, reviewToAdd);
+
+      // add ID to review object for notif purposes
+      const reviewWithId = {
+        ...reviewToAdd,
+        id: docRef.id
+      };
   
       // Update review count and stars in the cafe document
       await updateCafeRatingStats(id);
@@ -138,9 +144,12 @@ function CafeView() {
       setWifiRating(null);
       setError(null);
       setReviewError(null);
+
+      return reviewWithId; // return the new review with ID for notif purp
     } catch (err) { // Fix: use err instead of error for the caught exception
       console.error("Error submitting review:", err);
       setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
+      throw err; // Rethrow error for notification handling
     }
   };
 

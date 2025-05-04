@@ -1,6 +1,6 @@
 // src/components/admin/FeedbackDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { db } from '../../config/firebase';
+import { db, auth, addDoc } from '../../config/firebase';
 import { 
   collection, 
   getDocs, 
@@ -80,6 +80,26 @@ function FeedbackDashboard() {
       console.error("Error fetching reported reviews:", error);
     }
   };
+
+  
+  // flag review for later consideration
+  const handleReportReview = async (review) => {
+    try {
+      const reportsRef = collection(db, "reported");
+      const reportedReview = {
+        reportedUser: review.user || "Anonymous",
+        reviewContent: review.text,
+        reason: `Flagged by ${auth.currentUser.displayName}`,
+        dateReported: new Date().toISOString()
+      };
+      
+      await addDoc(reportsRef, reportedReview);
+      alert("Report sent to admin successfully.")
+    } catch (err) {
+      console.error("Error reporting review:", err);
+      alert("Could not report review. Please try again later.");
+    }
+  }
 
   // Create a query based on filter
   const createReviewsQuery = (isReset = false) => {
@@ -280,7 +300,7 @@ function FeedbackDashboard() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedFilter === 'all' 
                     ? 'bg-white shadow-sm text-[#6B7AEE]' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-white hover:text-gray-700'
                 }`}
               >
                 All
@@ -290,7 +310,7 @@ function FeedbackDashboard() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedFilter === 'positive' 
                     ? 'bg-white shadow-sm text-green-600' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-white hover:text-gray-700'
                 }`}
               >
                 Positive
@@ -300,7 +320,7 @@ function FeedbackDashboard() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedFilter === 'neutral' 
                     ? 'bg-white shadow-sm text-yellow-600' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-white hover:text-gray-700'
                 }`}
               >
                 Neutral
@@ -310,7 +330,7 @@ function FeedbackDashboard() {
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedFilter === 'negative' 
                     ? 'bg-white shadow-sm text-red-600' 
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-white hover:text-gray-700'
                 }`}
               >
                 Negative
@@ -411,7 +431,8 @@ function FeedbackDashboard() {
                             <button className="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
                               Respond
                             </button>
-                            <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">
+                            <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                              onClick={() => handleReportReview(review)}>
                               Flag
                             </button>
                           </div>

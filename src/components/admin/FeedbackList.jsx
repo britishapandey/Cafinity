@@ -1,29 +1,9 @@
 // src/components/admin/FeedbackList.jsx
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
-import { db, auth, collection, addDoc } from '../../config/firebase.js';
 
 function FeedbackList({ reviews }) {
   const [expandedReview, setExpandedReview] = useState(null);
-
-  // flag review for later consideration
-  const handleReportReview = async (review) => {
-    try {
-      const reportsRef = collection(db, "reported");
-      const reportedReview = {
-        reportedUser: review.user || "Anonymous",
-        reviewContent: review.text,
-        reason: `Flagged by ${auth.currentUser.displayName}`,
-        dateReported: new Date().toISOString()
-      };
-      
-      await addDoc(reportsRef, reportedReview);
-      alert("Report sent to admin successfully.")
-    } catch (err) {
-      console.error("Error reporting review:", err);
-      alert("Could not report review. Please try again later.");
-    }
-  }
 
   const toggleReview = (index) => {
     setExpandedReview(expandedReview === index ? null : index);
@@ -88,8 +68,7 @@ function FeedbackList({ reviews }) {
                   <button className="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
                     Respond
                   </button>
-                  <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                    onClick={() => handleReportReview(review)}>
+                  <button className="text-sm px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">
                     Flag
                   </button>
                 </div>

@@ -7,13 +7,9 @@ function Reviews({
     reviews,
     newReview,
     handleInputChange,
-    noiseRating,
-    setNoiseRating,
-    seatingRating,
-    setSeatingRating,
-    wifiRating,
-    setWifiRating,
     handleReviewSubmit,
+    attributeRatings,
+    setAttributeRatings,
     currentUser,
     reviewError,
     cafe
@@ -71,51 +67,21 @@ function Reviews({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Rate Amenities
                 </label>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Noise Level:</span>
-                  <select
-                    value={noiseRating || ''}
-                    onChange={(e) => setNoiseRating(e.target.value ? parseInt(e.target.value) : null)}
-                    className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                  >
-                    <option value="">Select</option>
-                    {[1, 2, 3, 4, 5].map((num) => (
+                {Object.entries(attributeRatings).map(([key, value]) => (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                    <select
+                      onChange={(e) => setAttributeRatings({...attributeRatings, [key]: e.target.value ? parseInt(e.target.value) : null})}
+                      className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]">
+                      <option value="">Select</option>
+                      {[1, 2, 3, 4, 5].map((num) => (
                       <option key={`noise-${num}`} value={num}>
                         {num} Star{num !== 1 ? 's' : ''}
                       </option>
                     ))}
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Seating Comfort:</span>
-                  <select
-                    value={seatingRating || ''}
-                    onChange={(e) => setSeatingRating(e.target.value ? parseInt(e.target.value) : null)}
-                    className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                  >
-                    <option value="">Select</option>
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <option key={`seating-${num}`} value={num}>
-                        {num} Star{num !== 1 ? 's' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">WiFi Quality:</span>
-                  <select
-                    value={wifiRating || ''}
-                    onChange={(e) => setWifiRating(e.target.value ? parseInt(e.target.value) : null)}
-                    className="ml-2 px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#5B4A43]"
-                  >
-                    <option value="">Select</option>
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <option key={`wifi-${num}`} value={num}>
-                        {num} Star{num !== 1 ? 's' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    </select>
+                  </div>
+                ))}
               </div>
     
               <div>
@@ -178,25 +144,21 @@ function Reviews({
                               />
                             ))}
                           </div>
-                          {(review.noiseRating || review.seatingRating || review.wifiRating) && (
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {review.noiseRating && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                          {
+                            review.attributeRatings && Object.entries(review.attributeRatings)
+                            .filter(([_, value]) => {
+                              return value !== null;
+                            }
+                            ).map(([key, value]) => (
+                              <div className="">
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Noise: {review.noiseRating}/5
+                                {key.replace(/([A-Z])/g, ' $1').trim()}: {value}/5
                                 </span>
-                              )}
-                              {review.seatingRating && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Seating: {review.seatingRating}/5
-                                </span>
-                              )}
-                              {review.wifiRating && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  WiFi: {review.wifiRating}/5
-                                </span>
-                              )}
-                            </div>
-                          )}
+                              </div>
+                            ))
+                          }
+                          </div>
                           <p className="text-gray-700 text-sm">{review.text}</p>
                         </div>
                       </div>

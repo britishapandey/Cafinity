@@ -16,9 +16,15 @@ function CafeView() {
     rating: 5,
     text: '',
   });
-  const [noiseRating, setNoiseRating] = useState(null);
-  const [seatingRating, setSeatingRating] = useState(null);
-  const [wifiRating, setWifiRating] = useState(null);
+  const [attributeRatings, setAttributeRatings] = useState({
+    BikeParking: null,
+    BusinessAcceptsCreditCards: null,
+    OutdoorSeating: null,
+    RestaurantsGoodForGroups: null,
+    DriveThru: null,
+    WiFi: null,
+    NoiseLevel: null,
+  })
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const [reviewError, setReviewError] = useState(null);
@@ -117,10 +123,9 @@ function CafeView() {
         user: currentUser.displayName || "Anonymous", // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
+        attributeRatings: attributeRatings,
         text: newReview.text,
-        noiseRating: noiseRating,
-        seatingRating: seatingRating,
-        wifiRating: wifiRating,
+
         date: new Date().toISOString()
       };
   
@@ -133,9 +138,6 @@ function CafeView() {
       // Update local state
       setReviews(prev => [...prev, reviewToAdd]);
       setNewReview({ user: "", rating: 5, text: "" });
-      setNoiseRating(null);
-      setSeatingRating(null);
-      setWifiRating(null);
       setError(null);
       setReviewError(null);
     } catch (err) { // Fix: use err instead of error for the caught exception
@@ -371,12 +373,8 @@ function CafeView() {
             reviews={reviews}
             newReview={newReview}
             handleInputChange={handleInputChange}
-            noiseRating={noiseRating}
-            setNoiseRating={setNoiseRating}
-            seatingRating={seatingRating}
-            setSeatingRating={setSeatingRating}
-            wifiRating={wifiRating}
-            setWifiRating={setWifiRating}
+            attributeRatings={attributeRatings}
+            setAttributeRatings={setAttributeRatings}
             handleReviewSubmit={handleReviewSubmit}
             currentUser={currentUser}
             reviewError={reviewError}

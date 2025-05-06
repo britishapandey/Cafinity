@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { getAuth } from 'firebase/auth';
+import { db, auth } from '../../config/firebase';
 
 function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");

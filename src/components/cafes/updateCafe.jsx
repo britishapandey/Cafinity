@@ -156,7 +156,7 @@ function UpdateCafe({ storage }) { // Add storage as a prop
       city: newCafeCity,
       state: newCafeState,
       postal_code: newCafePostalCode,
-      amenities: newCafeAttributes,
+      attributes: newCafeAttributes,
       hours: formattedHours,
       images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'],
     };

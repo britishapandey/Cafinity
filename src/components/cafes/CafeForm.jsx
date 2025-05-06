@@ -109,7 +109,7 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
       state: newCafeState,
       postal_code: newCafePostalCode,
       stars: newCafeRating,
-      amenities: newCafeAttributes,
+      attributes: newCafeAttributes,
       hours: formattedHours,
       images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'],
       ownerId: userId,

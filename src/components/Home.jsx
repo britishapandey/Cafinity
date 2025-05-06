@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import {collection, getDocs, query, where} from "firebase/firestore";
 import CafeList from "./cafes/CafeList";
-import { ArrowUpDown, Filter } from "lucide-react";
-import { useFloating, useMergeRefs, useInteractions, useClick, useDismiss } from "@floating-ui/react";
-import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Filter } from "lucide-react";
+import { useFloating, useInteractions, useClick, useDismiss } from "@floating-ui/react";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -12,6 +11,10 @@ const Home = ({ user }) => {
   const [filteredCafes, setFilteredCafes] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [favoriteCafeIds, setFavoriteCafeIds] = useState([]);
+  // toggle sort menu open
+  const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [cafeCreditCard, setCafeCreditCard] = useState(false);
   const [cafeBikeParking, setCafeBikeParking] = useState(false);
@@ -37,6 +40,21 @@ const Home = ({ user }) => {
 
   const cafesCollectionRef = collection(db, "cafes");
 
+  const fetchUserFavorites = async () => {
+    if (!user) return;
+
+    try {
+      const favoritesRef = collection(db, "favorites");
+      const q = query(favoritesRef, where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+
+      const favoriteIds = querySnapshot.docs.map(doc => doc.data().cafeId);
+      setFavoriteCafeIds(favoriteIds);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
+
   const getCafeList = async () => {
     try {
       setIsLoading(true);
@@ -57,6 +75,7 @@ const Home = ({ user }) => {
   useEffect(() => {
     if (user) {
       getCafeList();
+      fetchUserFavorites();
     }
   }, [user]);
 
@@ -64,6 +83,10 @@ const Home = ({ user }) => {
   const handleSearchSubmit = (filters) => {
     const term = filters.searchTerm.toLowerCase();
     let tempFilteredCafes = [...cafeList];
+
+    if (filters.favorites) {
+      tempFilteredCafes = tempFilteredCafes.filter(cafe => favoriteCafeIds.includes(cafe.id));
+    }
 
     if (term) {
       tempFilteredCafes = tempFilteredCafes.filter(cafe => cafe.name.toLowerCase().includes(term));
@@ -125,6 +148,7 @@ const Home = ({ user }) => {
               <form onSubmit={(e) => {e.preventDefault();
               handleSearchSubmit({ searchTerm,
                 creditCard: cafeCreditCard,
+                favorites: showFavorites,
                 bikeParking: cafeBikeParking,
                 noiseLevel: cafeNoiseLevel,
                 goodForGroups: cafeGoodForGroups,
@@ -132,61 +156,77 @@ const Home = ({ user }) => {
                 driveThru: cafeDriveThru,
                 wifi: cafeWiFi })}}>
               <div className="flex flex-col">
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
+                  <input
+                      type="checkbox"
+                      checked={showFavorites}
+                      onChange={(e) => setShowFavorites(e.target.checked)}
+                      className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="font-medium">Show only favorites</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeCreditCard}
                     onChange={(e) => setCafeCreditCard(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Accepts Credit Card
+                  <span className="font-medium">Accepts Credit Card</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeBikeParking}
                     onChange={(e) => setCafeBikeParking(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Bike Parking
+                  <span className="font-medium">Bike Parking</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeNoiseLevel}
                     onChange={(e) => setCafeNoiseLevel(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Quiet
+                  <span className="font-medium">Quiet</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeGoodForGroups}
                     onChange={(e) => setCafeGoodForGroups(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Good for Groups
+                  <span className="font-medium">Good for Groups</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeOutdoorSeating}
                     onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Outdoor Seating
+                  <span className="font-medium">Outdoor Seating</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeDriveThru}
                     onChange={(e) => setCafeDriveThru(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  Drive Thru
+                  <span className="font-medium">Drive Thru</span>
                 </label>
-                <label>
+                <label className="flex items-center space-x-2 p-2 bg-gray-100 rounded mb-2">
                   <input
                     type="checkbox"
                     checked={cafeWiFi}
                     onChange={(e) => setCafeWiFi(e.target.checked)}
+                    className="h-4 w-4 text-blue-600"
                   />
-                  WiFi
+                  <span className="font-medium">WiFi</span>
                 </label>
               </div>
 

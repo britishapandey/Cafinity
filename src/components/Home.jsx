@@ -12,8 +12,6 @@ const Home = ({ user }) => {
   const [filteredCafes, setFilteredCafes] = useState([]);
   const [showMap, setShowMap] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  // toggle sort menu open
-  const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [cafeCreditCard, setCafeCreditCard] = useState(false);
   const [cafeBikeParking, setCafeBikeParking] = useState(false);
@@ -23,14 +21,6 @@ const Home = ({ user }) => {
   const [cafeDriveThru, setCafeDriveThru] = useState(false);
   const [cafeWiFi, setCafeWiFi] = useState(false);
   const {
-    refs: sortRefs,
-    floatingStyles: sortFloatingStyles,
-    context: sortContext
-  } = useFloating({
-    open: sortOpen,
-    onOpenChange: setSortOpen,
-  });
-  const {
     refs: filterRefs,
     floatingStyles: filterFloatingStyles,
     context: filterContext
@@ -39,19 +29,11 @@ const Home = ({ user }) => {
     onOpenChange: setFilterOpen,
   });
   const {
-    getReferenceProps: getSortReferenceProps,
-    getFloatingProps: getSortFloatingProps
-  } = useInteractions([useClick(sortContext), useDismiss(sortContext)]);
-  const {
     getReferenceProps: getFilterReferenceProps,
     getFloatingProps: getFilterFloatingProps
   } = useInteractions([useClick(filterContext), useDismiss(filterContext)]);
-  // const ref = useMergeRefs([sortRefs.setReference, filterRefs.setReference]);
-  const sortRef = sortRefs.setReference;
   const filterRef = filterRefs.setReference;
-  const sortProps = getSortReferenceProps();
   const filterProps = getFilterReferenceProps();
-  // const Props = getSortReferenceProps(getFilterReferenceProps());
 
   const cafesCollectionRef = collection(db, "cafes");
 
@@ -124,40 +106,13 @@ const Home = ({ user }) => {
     <>
         <div className="my-4 px-4 flex gap-2 items-center w-full">
         <button 
-          ref={sortRef} {...sortProps}
-          className="z-10 px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
-          <ArrowUpDown />
-        </button>
-        {sortOpen && (
-          <div
-            className="flex flex-col z-10 ml-24"
-            ref={sortRefs.setFloating}
-            style={{
-              ...sortFloatingStyles,
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: "0.5rem",
-              padding: "0.5rem",
-            }}
-            {...getSortFloatingProps()}>
-              Sort Menu
-              <FormGroup>
-                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (A-Z)" />
-                <FormControlLabel control={<Checkbox />} label="Sort by Alphabetical (Z-A)" />
-              </FormGroup>
-              <button>
-                Submit
-              </button>
-            </div>
-        )}
-        <button 
           ref={filterRef} {...filterProps}
           className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
           <Filter />
         </button>
         {filterOpen && (
           <div
-            className="flex flex-col z-10"
+            className="flex flex-col z-10 ml-14"
             ref={filterRefs.setFloating}
             style={{
               ...filterFloatingStyles,

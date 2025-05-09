@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "../../config/firebase";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { getAuth, updateProfile } from "firebase/auth";
+import { createClient } from "@supabase/supabase-js";
+import { Link } from "react-router-dom";
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-import { getAuth, updateProfile } from "firebase/auth";
-
-import { createClient } from "@supabase/supabase-js";
 
 function Profile({ setUserRole }) {
   const [profileData, setProfileData] = useState({
@@ -22,6 +21,8 @@ function Profile({ setUserRole }) {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [pic, setPic] = useState(null);
+  const [favoriteCafes, setFavoriteCafes] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
 
   const user = auth.currentUser;
 
@@ -29,10 +30,58 @@ function Profile({ setUserRole }) {
   useEffect(() => {
     if (user) {
       initializeProfile();
+      fetchFavoriteCafes();
     }
   }, [user]);
 
-  // Code to update the profile photo, set the correct status, and attach the image url to th authenticated user.
+  // Fetch the user's favorite cafes
+  const fetchFavoriteCafes = async () => {
+    if (!user) return;
+    
+    setLoadingFavorites(true);
+    try {
+      // Query the favorites collection for documents where userId matches current user
+      const favoritesRef = collection(db, "favorites");
+      const q = query(favoritesRef, where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      const favorites = [];
+      
+      // For each favorite, get the associated cafe details
+      // Changed the variable name from 'doc' to 'docSnapshot' to avoid conflict
+      for (const docSnapshot of querySnapshot.docs) {
+        const favorite = docSnapshot.data();
+        favorite.id = docSnapshot.id; // Save the favorite document ID
+        
+        // Try to get cafe details if available
+        try {
+          // Now we can use the imported 'doc' function correctly
+          const cafeDocRef = doc(db, "cafes", favorite.cafeId);
+          const cafeDoc = await getDoc(cafeDocRef);
+          
+          if (cafeDoc.exists()) {
+            const cafeData = cafeDoc.data();
+            favorite.cafeDetails = {
+              ...cafeData,
+              id: favorite.cafeId
+            };
+          }
+        } catch (err) {
+          console.error("Error fetching cafe details:", err);
+        }
+        
+        favorites.push(favorite);
+      }
+      
+      setFavoriteCafes(favorites);
+    } catch (err) {
+      console.error("Error fetching favorites:", err);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  // Code to update the profile photo, set the correct status, and attach the image url to the authenticated user.
   const updateProfilePhoto = async (imageFile) => {
     const auth = getAuth();
     console.log(SUPABASE_URL, ANON_KEY);
@@ -163,11 +212,69 @@ function Profile({ setUserRole }) {
     );
   }
 
+  // Function to render cafe cards for favorites
+  const renderFavoriteCafeCard = (favorite) => {
+    const getInitials = (name) => {
+      return name
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    };
+    
+    const getColorFromName = (name) => {
+      const colors = [
+        "bg-[#FF6B6B]", "bg-[#4ECDC4]", "bg-[#45B7D1]", "bg-[#96CEB4]",
+        "bg-[#6B7AEE]", "bg-[#9D65C9]", "bg-[#FF9671]", "bg-[#59C9A5]",
+        "bg-[#6C88C4]",
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+    };
+    
+    // Helper function to safely format date
+    const formatDate = (timestamp) => {
+      if (!timestamp) return 'Unknown date';
+      
+      try {
+        if (timestamp.toDate) {
+          return new Date(timestamp.toDate()).toLocaleDateString();
+        } else if (timestamp instanceof Date) {
+          return timestamp.toLocaleDateString();
+        } else {
+          return new Date(timestamp).toLocaleDateString();
+        }
+      } catch (err) {
+        console.error("Error formatting date:", err);
+        return 'Invalid date';
+      }
+    };
+    
+    return (
+      <Link to={`/cafe/${favorite.cafeId}`} key={favorite.id} 
+          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+        <div className={`${getColorFromName(favorite.cafeName)} h-24 flex items-center justify-center`}>
+          <span className="text-2xl font-bold text-white">
+            {getInitials(favorite.cafeName)}
+          </span>
+        </div>
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-800 mb-1">{favorite.cafeName}</h3>
+          <p className="text-xs text-gray-500">Added on {formatDate(favorite.addedAt)}</p>
+        </div>
+      </Link>
+    );
+  };
+
   return (
     <>
       {uploading && <LoadingOverlay />}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           {/* Header Section */}
           <div className="relative h-48 bg-gradient-to-r from-[#6B7AEE] to-[#8691F0]">
             <div className="absolute -bottom-16 left-8 flex items-end space-x-6">
@@ -333,6 +440,30 @@ function Profile({ setUserRole }) {
                     Cancel
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Favorites Section */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">Favorite Cafes</h2>
+            
+            {loadingFavorites ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6B7AEE]"></div>
+              </div>
+            ) : favoriteCafes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {favoriteCafes.map(renderFavoriteCafeCard)}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">You haven't favorited any cafes yet.</p>
+                <Link to="/" className="mt-4 inline-block px-6 py-2 bg-[#6B7AEE] text-white rounded-lg hover:bg-[#5563d3] transition-colors">
+                  Explore Cafes
+                </Link>
               </div>
             )}
           </div>

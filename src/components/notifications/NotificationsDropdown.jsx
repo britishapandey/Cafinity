@@ -2,7 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { db, auth } from '../../config/firebase';
-import { collection, query, where, orderBy, limit, getDocs, collectionGroup } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  getDocs, 
+  collectionGroup,
+  updateDoc,
+  doc
+} from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationsDropdown = ({ userRole }) => {
@@ -43,7 +53,7 @@ const NotificationsDropdown = ({ userRole }) => {
           date: doc.data().dateReported,
           cafeId: doc.data().cafeId,
           cafeName: doc.data().cafeName,
-          read: false
+          read: doc.data().read || false // Default to false if not set
         }));
       } 
       else if (userRole === 'owner') {
@@ -72,7 +82,7 @@ const NotificationsDropdown = ({ userRole }) => {
             date: reviewDoc.data().date,
             cafeId: cafeDoc.id,
             cafeName: cafeData.name,
-            read: false
+            read: reviewDoc.data().notificationRead || false // Use notificationRead field
           }));
         });
         
@@ -81,8 +91,6 @@ const NotificationsDropdown = ({ userRole }) => {
       } 
       else {
         // Regular user sees activity related to them
-        // This could be replies to their reviews, etc.
-        // For now, we'll just get their recent reviews
         const reviewsQuery = query(
           collectionGroup(db, "reviews"),
           where("userId", "==", userId),
@@ -104,7 +112,7 @@ const NotificationsDropdown = ({ userRole }) => {
               content: `You left a ${doc.data().rating}-star review`,
               date: doc.data().date,
               cafeId: cafeId,
-              read: false
+              read: doc.data().notificationRead || false
             };
           });
         } catch (err) {
@@ -125,17 +133,93 @@ const NotificationsDropdown = ({ userRole }) => {
     }
   };
 
-  const handleNotificationClick = (notification) => {
-    // Mark as read logic would go here
-    
-    // Navigate based on notification type
-    if (notification.type === 'flagged_review' && userRole === 'admin') {
-      navigate('/admin');
-    } else if (notification.cafeId) {
-      navigate(`/cafe/${notification.cafeId}`);
+  const handleNotificationClick = async (notification) => {
+    try {
+      // Update the read status in state first (for immediate UI feedback)
+      setNotifications(prevNotifications => 
+        prevNotifications.map(n => 
+          n.id === notification.id ? { ...n, read: true } : n
+        )
+      );
+      
+      // Decrease unread count
+      if (!notification.read) {
+        setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+      }
+      
+      // Update in Firestore depending on notification type
+      if (notification.type === 'flagged_review' && userRole === 'admin') {
+        // For admins, update the read status in the reported collection
+        const reportedDocRef = doc(db, "reported", notification.id);
+        await updateDoc(reportedDocRef, { read: true });
+        
+        navigate('/admin');
+      } else if (notification.type === 'new_review' && userRole === 'owner') {
+        // For cafe owners, update the notificationRead field in the review
+        const reviewDocRef = doc(db, "cafes", notification.cafeId, "reviews", notification.id);
+        await updateDoc(reviewDocRef, { notificationRead: true });
+        
+        navigate(`/cafe/${notification.cafeId}`);
+      } else if (notification.type === 'your_review') {
+        // For users viewing their own reviews
+        // First we need to find the review's document reference
+        const reviewsQuery = query(
+          collectionGroup(db, "reviews"),
+          where("userId", "==", auth.currentUser.uid),
+          where("date", "==", notification.date)
+        );
+        
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        if (!reviewsSnapshot.empty) {
+          const reviewDocRef = reviewsSnapshot.docs[0].ref;
+          await updateDoc(reviewDocRef, { notificationRead: true });
+        }
+        
+        if (notification.cafeId) {
+          navigate(`/cafe/${notification.cafeId}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      // If there's an error, revert the UI change
+      fetchNotifications();
     }
-    
-    setShowDropdown(false);
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      // Update all notifications in state
+      setNotifications(prevNotifications => 
+        prevNotifications.map(n => ({ ...n, read: true }))
+      );
+      
+      // Reset unread count
+      setUnreadCount(0);
+      
+      // Update in Firestore
+      const updatePromises = notifications
+        .filter(n => !n.read)
+        .map(notification => {
+          if (notification.type === 'flagged_review') {
+            const reportedDocRef = doc(db, "reported", notification.id);
+            return updateDoc(reportedDocRef, { read: true });
+          } else if (notification.type === 'new_review' || notification.type === 'your_review') {
+            // Need to find the review document reference
+            // This simplified version assumes we already have the cafeId and reviewId
+            if (notification.cafeId && notification.id) {
+              const reviewDocRef = doc(db, "cafes", notification.cafeId, "reviews", notification.id);
+              return updateDoc(reviewDocRef, { notificationRead: true });
+            }
+          }
+          return Promise.resolve(); // For any notifications we can't update
+        });
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      // If there's an error, refresh the notifications
+      fetchNotifications();
+    }
   };
 
   const formatDate = (dateString) => {
@@ -175,8 +259,16 @@ const NotificationsDropdown = ({ userRole }) => {
       
       {showDropdown && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg overflow-hidden z-50">
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="font-medium text-gray-900">Notifications</h3>
+            {unreadCount > 0 && (
+              <button 
+                onClick={markAllAsRead}
+                className="text-sm text-white-600"
+              >
+                Mark all as read
+              </button>
+            )}
           </div>
           
           <div className="max-h-96 overflow-y-auto">
@@ -242,7 +334,6 @@ const NotificationsDropdown = ({ userRole }) => {
               ))
             )}
           </div>
-          
         </div>
       )}
     </div>

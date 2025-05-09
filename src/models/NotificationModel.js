@@ -109,23 +109,107 @@ export const markNotificationAsRead = async (notificationId) => {
   }
 };
 
-// Function to mark all notifications for a user as read
-export const markAllNotificationsAsRead = async (userId) => {
+// Function to mark a review notification as read
+export const markReviewNotificationAsRead = async (cafeId, reviewId) => {
   try {
-    const unreadQuery = query(
-      collection(db, "notifications"),
-      where("userId", "==", userId),
-      where("read", "==", false)
-    );
+    if (!cafeId || !reviewId) {
+      throw new Error('Missing cafeId or reviewId');
+    }
     
-    const querySnapshot = await getDocs(unreadQuery);
+    await updateDoc(doc(db, "cafes", cafeId, "reviews", reviewId), {
+      notificationRead: true
+    });
+    return true;
+  } catch (error) {
+    console.error('Error marking review notification as read:', error);
+    throw error;
+  }
+};
+
+// Function to mark a reported review notification as read
+export const markReportedNotificationAsRead = async (reportId) => {
+  try {
+    if (!reportId) {
+      throw new Error('Missing reportId');
+    }
     
-    // Create a batch of update operations
-    const updatePromises = querySnapshot.docs.map(docSnapshot => 
-      updateDoc(doc(db, "notifications", docSnapshot.id), { read: true })
-    );
-    
-    await Promise.all(updatePromises);
+    await updateDoc(doc(db, "reported", reportId), {
+      read: true
+    });
+    return true;
+  } catch (error) {
+    console.error('Error marking reported notification as read:', error);
+    throw error;
+  }
+};
+
+// Function to mark all notifications for a user as read
+export const markAllNotificationsAsRead = async (userId, userRole) => {
+  try {
+    if (userRole === 'admin') {
+      // Mark all reported reviews as read
+      const reportedQuery = query(
+        collection(db, "reported"),
+        where("read", "==", false)
+      );
+      
+      const reportedSnapshot = await getDocs(reportedQuery);
+      const updatePromises = reportedSnapshot.docs.map(docSnapshot => 
+        updateDoc(doc(db, "reported", docSnapshot.id), { read: true })
+      );
+      
+      await Promise.all(updatePromises);
+    } else if (userRole === 'owner') {
+      // Get all cafes owned by the user
+      const cafesQuery = query(
+        collection(db, "cafes"),
+        where("ownerId", "==", userId)
+      );
+      
+      const cafesSnapshot = await getDocs(cafesQuery);
+      
+      // For each cafe, mark all unread reviews as read
+      const updatePromises = [];
+      
+      for (const cafeDoc of cafesSnapshot.docs) {
+        const reviewsQuery = query(
+          collection(db, "cafes", cafeDoc.id, "reviews"),
+          where("notificationRead", "!=", true)
+        );
+        
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        
+        reviewsSnapshot.docs.forEach(reviewDoc => {
+          updatePromises.push(
+            updateDoc(doc(db, "cafes", cafeDoc.id, "reviews", reviewDoc.id), {
+              notificationRead: true
+            })
+          );
+        });
+      }
+      
+      await Promise.all(updatePromises);
+    } else {
+      // Regular user - mark their review notifications as read
+      const reviewsQuery = query(
+        collectionGroup(db, "reviews"),
+        where("userId", "==", userId),
+        where("notificationRead", "!=", true)
+      );
+      
+      const reviewsSnapshot = await getDocs(reviewsQuery);
+      
+      const updatePromises = reviewsSnapshot.docs.map(reviewDoc => {
+        const cafePath = reviewDoc.ref.parent.parent.path;
+        const cafeId = cafePath.split('/').pop();
+        
+        return updateDoc(doc(db, "cafes", cafeId, "reviews", reviewDoc.id), {
+          notificationRead: true
+        });
+      });
+      
+      await Promise.all(updatePromises);
+    }
     
     return true;
   } catch (error) {
@@ -145,32 +229,15 @@ export const deleteNotification = async (notificationId) => {
   }
 };
 
-// Function to clear all notifications for a user
-export const clearAllNotifications = async (userId) => {
-  try {
-    const userNotificationsQuery = query(
-      collection(db, "notifications"),
-      where("userId", "==", userId)
-    );
-    
-    const querySnapshot = await getDocs(userNotificationsQuery);
-    
-    const deletePromises = querySnapshot.docs.map(docSnapshot => 
-      deleteDoc(doc(db, "notifications", docSnapshot.id))
-    );
-    
-    await Promise.all(deletePromises);
-    
-    return true;
-  } catch (error) {
-    console.error('Error clearing notifications:', error);
-    throw error;
-  }
-};
-
 // Utility function to create review notification for cafe owners
 export const createReviewNotification = async (review, cafeId, cafeName, ownerId) => {
   try {
+    // First, update the review to add the notificationRead field (initially false)
+    const reviewDocRef = doc(db, "cafes", cafeId, "reviews", review.id);
+    await updateDoc(reviewDocRef, {
+      notificationRead: false
+    });
+    
     const notification = {
       userId: ownerId,
       type: 'new_review',
@@ -192,6 +259,12 @@ export const createReviewNotification = async (review, cafeId, cafeName, ownerId
 // Utility function to create flagged review notification for admins
 export const createFlaggedReviewNotification = async (report, adminIds) => {
   try {
+    // First, update the report to add the read field (initially false)
+    const reportDocRef = doc(db, "reported", report.id);
+    await updateDoc(reportDocRef, {
+      read: false
+    });
+    
     // Create a notification for each admin
     const notificationPromises = adminIds.map(adminId => {
       const notification = {

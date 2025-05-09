@@ -30,19 +30,19 @@ function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(true); // Add loading state for auth
 
 
-  const getCafeList = async () => {
-    try {
-      const data = await getDocs(cafesCollectionRef);
-      const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setCafeList(filteredData);
-      setFilteredCafes(filteredData); // Initialize filteredCafes with all cafes
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  useEffect(() => {
-    getCafeList(); // Fetch data on initial load
-  }, []); 
+  // const getCafeList = async () => {
+  //   try {
+  //     const data = await getDocs(cafesCollectionRef);
+  //     const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+  //     setCafeList(filteredData);
+  //     setFilteredCafes(filteredData); // Initialize filteredCafes with all cafes
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+  // useEffect(() => {
+  //   getCafeList(); // Fetch data on initial load
+  // }, []); 
 
   // Monitor user authentication state
   useEffect(() => {

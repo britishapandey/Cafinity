@@ -60,15 +60,23 @@ function Reviews({
 
     const handleReportReview = async (review) => {
       try {
+        // Check if user is authenticated
+        if (!auth.currentUser) {
+          alert("You need to be logged in to report a review.");
+          return;
+        }
+        
         const reportsRef = collection(db, "reported");
         const reportedReview = {
           reportedUser: review.user || "Anonymous",
           reviewContent: review.text,
-          reason: `Flagged by ${auth.currentUser.displayName || auth.currentUser.email}`,
+          reviewRating: review.rating,
+          reason: `Flagged by ${auth.currentUser.displayName || auth.currentUser.email || "a user"}`,
           dateReported: new Date().toISOString(),
-          cafeId: cafe.id,
-          cafeName: cafe.name,
-          reviewId: review.id // include the review ID for reference
+          cafeId: cafe.id, // Make sure to include the cafe ID
+          cafeName: cafe.name, // Make sure to include the cafe name
+          reviewId: review.id, // Include the review ID for reference
+          read: false // Initialize as unread
         };
         
         // Add the report

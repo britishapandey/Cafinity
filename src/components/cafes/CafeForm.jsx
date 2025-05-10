@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { getAuth } from 'firebase/auth';
-import { db, auth } from '../../config/firebase';
 
 function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [newCafeName, setNewCafeName] = useState("");
@@ -18,15 +17,6 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const [cafeOutdoorSeating, setCafeOutdoorSeating] = useState(false);
   const [cafeDriveThru, setCafeDriveThru] = useState(false);
   const [cafeWiFi, setCafeWiFi] = useState(false);
-  const [newCafeAttributes, setNewCafeAttributes] = useState({
-    BusinessAcceptsCreditCards: cafeCreditCard,
-    BikeParking: cafeBikeParking,
-    NoiseLevel: cafeNoiseLevel,
-    RestaurantsGoodForGroups: cafeGoodForGroups,
-    OutdoorSeating: cafeOutdoorSeating,
-    DriveThru: cafeDriveThru,
-    WiFi: cafeWiFi,
-  });
   const [newCafeHours, setNewCafeHours] = useState({
     Friday: { open: "", close: "" },
     Monday: { open: "", close: "" },
@@ -42,25 +32,17 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
   const daysOfWeek = ["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"];
 
   // Sync newCafeAttributes with checkbox states
-  useEffect(() => {
-    setNewCafeAttributes({
-      BusinessAcceptsCreditCards: cafeCreditCard,
-      BikeParking: cafeBikeParking,
-      NoiseLevel: cafeNoiseLevel ? "quiet" : "false",
-      RestaurantsGoodForGroups: cafeGoodForGroups,
-      OutdoorSeating: cafeOutdoorSeating,
-      DriveThru: cafeDriveThru,
-      WiFi: cafeWiFi ? "free" : "false",
-    });
-  }, [
-    cafeCreditCard,
-    cafeBikeParking,
-    cafeNoiseLevel,
-    cafeGoodForGroups,
-    cafeOutdoorSeating,
-    cafeDriveThru,
-    cafeWiFi,
-  ]);
+  const getUpdatedAttributes = () => {
+    return {
+      BusinessAcceptsCreditCards: cafeCreditCard ? "True" : "False",
+      BikeParking: cafeBikeParking ? "True" : "False",
+      NoiseLevel: cafeNoiseLevel ? "u'quiet'" : "u'average'",
+      RestaurantsGoodForGroups: cafeGoodForGroups ? "True" : "False",
+      OutdoorSeating: cafeOutdoorSeating ? "True" : "False",
+      DriveThru: cafeDriveThru ? "True" : "False",
+      WiFi: cafeWiFi ? "u'free'" : "False",
+    };
+  };
 
   const handleImageUrl = () => {
     if (imageUrl) {
@@ -108,11 +90,21 @@ function CafeForm({ onSubmitCafe, storage }) { // Add storage as a prop
       city: newCafeCity,
       state: newCafeState,
       postal_code: newCafePostalCode,
-      stars: newCafeRating,
-      attributes: newCafeAttributes,
+      stars: newCafeRating || 0,
+      attributes: getUpdatedAttributes(),
       hours: formattedHours,
       images: newCafeImages.length > 0 ? newCafeImages : ['https://static.vecteezy.com/system/resources/previews/026/398/113/non_2x/coffee-cup-icon-black-white-silhouette-design-vector.jpg'],
       ownerId: userId,
+      // Add Google Places compatible fields
+      latitude: 0, // Default value, update with real data if available
+      longitude: 0, // Default value, update with real data if available
+      review_count: 0,
+      is_open: 1,
+      categories: "Coffee & Tea, Cafe",
+      business_id: `manual_${Date.now()}`, // Generate a unique ID for manually added cafes
+      source: 'manual',
+      fetched_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     onSubmitCafe(newCafe);

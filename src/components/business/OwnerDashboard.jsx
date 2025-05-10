@@ -5,6 +5,8 @@ import CafeList from '../cafes/CafeList';
 import SentimentSummary from '../admin/SentimentSummary';
 import FeedbackChart from '../admin/FeedbackChart';
 import { onAuthStateChanged } from "firebase/auth";
+import getCafesCollection from '../../utils/cafeCollection';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -15,7 +17,6 @@ const OwnerDashboard = () => {
   const [error, setError] = useState("");
   const [cafes, setCafes] = useState([]); // State for cafe list
   const [reviews, setReviews] = useState([]);
-  const cafesCollectionRef = collection(db, "cafes");
   const [sentimentData, setSentimentData] = useState({
     positive: 0,
     neutral: 0,
@@ -66,7 +67,9 @@ const OwnerDashboard = () => {
         const userSnapshot = await getDoc(userDocRef);
         const profile = userSnapshot.data();
         setOwnerName(profile.name);
-        const cafesSnapshot = await getDocs(collection(db, "cafes"));
+        
+        const cafesCollectionRef = getCafesCollection();
+        const cafesSnapshot = await getDocs(cafesCollectionRef);
         const cafesData = cafesSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -76,7 +79,7 @@ const OwnerDashboard = () => {
         // Collect all reviews from all owner's cafes
         let allReviews = [];
         for (const cafe of cafesData) {
-          const reviewsCollectionRef = collection(db, "cafes", cafe.id, "reviews");
+          const reviewsCollectionRef = collection(db, "googleCafes", cafe.id, "reviews");
           const reviewsSnapshot = await getDocs(reviewsCollectionRef);
           const cafeReviews = reviewsSnapshot.docs.map(doc => ({
             ...doc.data(),

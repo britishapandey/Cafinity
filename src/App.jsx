@@ -17,6 +17,8 @@ import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
 import AdminPanel from './components/admin/AdminPanel';
+import LongBeachCafes from './components/cafes/LongBeachCafes';
+
 
 
 function App() {
@@ -27,21 +29,6 @@ function App() {
   const cafesCollectionRef = collection(db, "cafes"); // Firebase collection ref
 
   const [isAuthLoading, setIsAuthLoading] = useState(true); // Add loading state for auth
-
-
-  const getCafeList = async () => {
-    try {
-      const data = await getDocs(cafesCollectionRef);
-      const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setCafeList(filteredData);
-      setFilteredCafes(filteredData); // Initialize filteredCafes with all cafes
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  useEffect(() => {
-    getCafeList(); // Fetch data on initial load
-  }, []); 
 
   // Monitor user authentication state
   useEffect(() => {
@@ -169,6 +156,10 @@ function App() {
             )
           }
         />
+        {/* <Route
+          path="/longbeach"
+          element={user ? <LongBeachCafes /> : <Navigate to="/login" />}
+        /> */}
 
         {/* Cafe view route */}
         <Route

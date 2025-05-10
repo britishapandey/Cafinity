@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc } from 'firebase/firestore';
 import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import Reviews from "../reviews/Review.jsx"
 
@@ -20,6 +20,8 @@ function CafeView() {
   const [seatingRating, setSeatingRating] = useState(null);
   const [wifiRating, setWifiRating] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false); // Add state for favorite status
+  const [favoriteDocId, setFavoriteDocId] = useState(null);
   
   const [reviewError, setReviewError] = useState(null);
 
@@ -55,6 +57,64 @@ function CafeView() {
     };
     getCafeList();
   }, [id]);
+
+  const checkIfFavorite = async (userId, cafeId) => {
+    try {
+      // Using a top-level "favorites" collection with queries
+      const favoritesRef = collection(db, "favorites");
+      const q = query(
+          favoritesRef,
+          where("userId", "==", userId),
+          where("cafeId", "==", cafeId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const isFav = !querySnapshot.empty;
+      setIsFavorite(isFav);
+
+      // Save the document ID for deletion later if needed
+      if (isFav) {
+        setFavoriteDocId(querySnapshot.docs[0].id);
+      }
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+    }
+  };
+
+  const handleFavoriteToggle = async (e) => {
+    e.stopPropagation(); // Prevent navigation
+
+    if (!currentUser) {
+      // Optionally redirect to login or show a message
+      alert("Please log in to save favorites");
+      return;
+    }
+
+    try {
+      if (isFavorite && favoriteDocId) {
+        // Remove from favorites
+        await deleteDoc(doc(db, "favorites", favoriteDocId));
+      } else {
+        // Add to favorites
+        await addDoc(collection(db, "favorites"), {
+          userId: currentUser.uid,
+          cafeId: cafe.id,
+          cafeName: cafe.name,
+          addedAt: new Date()
+        });
+      }
+
+      // Update state
+      setIsFavorite(!isFavorite);
+
+      // If we just favorited, we need to get the new doc ID
+      if (!isFavorite) {
+        checkIfFavorite(currentUser.uid, cafe.id);
+      }
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+    }
+  };
 
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
@@ -126,6 +186,12 @@ function CafeView() {
   
       // Add review to subcollection
       await addDoc(reviewsCollectionRef, reviewToAdd);
+
+      // add ID to review object for notif purposes
+      const reviewWithId = {
+        ...reviewToAdd,
+        id: docRef.id
+      };
   
       // Update review count and stars in the cafe document
       await updateCafeRatingStats(id);
@@ -138,9 +204,12 @@ function CafeView() {
       setWifiRating(null);
       setError(null);
       setReviewError(null);
+
+      return reviewWithId; // return the new review with ID for notif purp
     } catch (err) { // Fix: use err instead of error for the caught exception
       console.error("Error submitting review:", err);
       setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
+      throw err; // Rethrow error for notification handling
     }
   };
 
@@ -249,7 +318,26 @@ function CafeView() {
           {/* Left Column - Cafe Info */}
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
+              <div className="flex justify-between w-full">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
+                <svg
+                  onClick={handleFavoriteToggle}
+                  className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'} cursor-pointer ml-2`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  fill={isFavorite ? "currentColor" : "none"}
+                  strokeWidth="2"
+                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                  role="button"
+                  tabIndex="0"
+              >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              </div>
               <p className="text-gray-600 mb-4">
                 {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
               </p>

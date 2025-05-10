@@ -1,7 +1,8 @@
 import React from 'react';
 import { FlagIcon, Star } from 'lucide-react';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase.js';
+import { createNotification, createReviewNotification, createFlaggedReviewNotification } from '../../models/NotificationModel';
 
 function Reviews({
     reviews,
@@ -13,32 +14,97 @@ function Reviews({
     setSeatingRating,
     wifiRating,
     setWifiRating,
-    handleReviewSubmit,
+    handleReviewSubmit: originalHandleReviewSubmit,
     currentUser,
     reviewError,
     cafe
   }){
 
+    // Wrapper for the review submission to handle notifications
+    const handleReviewSubmit = async (e) => {
+      try {
+        // Call the original handler first
+        await originalHandleReviewSubmit(e);
+        
+        // After successful review submission, create a notification for the cafe owner
+        if (cafe && cafe.ownerId) {
+          // Get the latest review (the one just added)
+          const reviewsCollectionRef = collection(db, "cafes", cafe.id, "reviews");
+          const reviewsQuery = query(
+            reviewsCollectionRef,
+            where("userId", "==", currentUser.uid),
+            where("date", ">=", new Date(Date.now() - 60000).toISOString()) // Last minute
+          );
+          
+          const reviewsSnapshot = await getDocs(reviewsQuery);
+          
+          if (!reviewsSnapshot.empty) {
+            const latestReview = {
+              id: reviewsSnapshot.docs[0].id,
+              ...reviewsSnapshot.docs[0].data()
+            };
+            
+            // Create notification for cafe owner
+            await createReviewNotification(
+              latestReview,
+              cafe.id,
+              cafe.name,
+              cafe.ownerId
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error handling review submission with notifications:", error);
+      }
+    };
+
     const handleReportReview = async (review) => {
       try {
+        // Check if user is authenticated
+        if (!auth.currentUser) {
+          alert("You need to be logged in to report a review.");
+          return;
+        }
+        
         const reportsRef = collection(db, "reported");
         const reportedReview = {
           reportedUser: review.user || "Anonymous",
           reviewContent: review.text,
-          reason: `Flagged by ${auth.currentUser.displayName}`,
+          reviewRating: review.rating,
+          reason: `Flagged by ${auth.currentUser.displayName || auth.currentUser.email || "a user"}`,
           dateReported: new Date().toISOString(),
-          cafeId: cafe.id,
-          cafeName: cafe.name,
-          reviewId: review.id // include the review ID for reference
+          cafeId: cafe.id, // Make sure to include the cafe ID
+          cafeName: cafe.name, // Make sure to include the cafe name
+          reviewId: review.id, // Include the review ID for reference
+          read: false // Initialize as unread
         };
         
-        await addDoc(reportsRef, reportedReview);
-        alert("Report sent to admin successfully.")
+        // Add the report
+        const reportDocRef = await addDoc(reportsRef, reportedReview);
+        
+        // Get all admin users to notify them
+        const adminQuery = query(
+          collection(db, "profiles"),
+          where("role", "==", "admin")
+        );
+        
+        const adminSnapshot = await getDocs(adminQuery);
+        const adminIds = adminSnapshot.docs.map(doc => doc.id);
+        
+        // If there are admins, create notifications for them
+        if (adminIds.length > 0) {
+          await createFlaggedReviewNotification(
+            { ...reportedReview, id: reportDocRef.id },
+            adminIds
+          );
+        }
+        
+        alert("Report sent to admin successfully.");
       } catch (err) {
         console.error("Error reporting review:", err);
         alert("Could not report review. Please try again later.");
       }
-    }
+    };
 
     return (
         <div className="space-y-6 lg:col-span-2">

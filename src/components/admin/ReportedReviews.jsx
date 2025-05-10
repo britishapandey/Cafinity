@@ -11,7 +11,7 @@ function FeedbackList({ reviews }) {
     const handleDeleteReview = async (cafeId, reviewId) => {
         try {
             // Delete from the reviews subcollection
-            const reviewDocRef = doc(db, "cafes", cafeId, "reviews", reviewId);
+            const reviewDocRef = doc(db, "googleCafes", cafeId, "reviews", reviewId);
             await deleteDoc(reviewDocRef);
             
             // Delete from reported collection
@@ -31,7 +31,7 @@ function FeedbackList({ reviews }) {
     // Add this function to update cafe stats after deleting a review
     const updateCafeRatingStats = async (cafeId) => {
         try {
-        const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+        const reviewsCollectionRef = collection(db, "googleCafes", cafeId, "reviews");
         const reviewsSnapshot = await getDocs(reviewsCollectionRef);
         const reviews = reviewsSnapshot.docs.map(doc => doc.data());
         

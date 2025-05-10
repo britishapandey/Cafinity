@@ -22,21 +22,32 @@ function CafeList({ cafes, showMap, showNav }) {
     const map = useMap();
 
     useEffect(() => {
-      if (map && hoveredCafe) {
-        map.setCenter({ lat: Number(hoveredCafe.latitude), lng: Number(hoveredCafe.longitude) });
-        map.setZoom(15);
-      }
-    }, [map, hoveredCafe]);
-
+          if (map && hoveredCafe) {
+            map.setCenter({ 
+              lat: Number(hoveredCafe.latitude), 
+              lng: Number(hoveredCafe.longitude) 
+            });
+            map.setZoom(15);
+          }
+        }, [map, hoveredCafe]);
+    
     useEffect(() => {
       if (navigator.geolocation && !hoveredCafe) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+            const pos = { 
+              lat: position.coords.latitude, 
+              lng: position.coords.longitude 
+            };
             map.setCenter(pos);
             map.setZoom(13);
           },
-          showError
+          (error) => {
+            console.error("Error getting location:", error);
+            // Default to Long Beach center
+            map.setCenter({ lat: 33.7701, lng: -118.1937 });
+            map.setZoom(13);
+          }
         );
       }
     }, [map, hoveredCafe]);
@@ -108,6 +119,10 @@ function CafeList({ cafes, showMap, showNav }) {
   return (
     <div className="flex flex-row max-h-screen pb-20 gap-4">
       <div className={`flex-1 overflow-y-auto pr-4 ${showMap ? "" : "w-full"}`}>
+        {/* Results Count */}
+        <p className="mb-4 ml-8 text-gray-600">
+          Found {currentCafes.length} {currentCafes.length === 1 ? 'cafe' : 'cafes'}
+        </p>
         <div className="flex flex-wrap gap-4 justify-center">
           {currentCafes.map((cafe) => (
             <CafeCard
@@ -121,28 +136,31 @@ function CafeList({ cafes, showMap, showNav }) {
       </div>
 
       {showMap && (
-        <div className="w-[400px] h-screen">
+        <div className="lg:w-1/3 h-[600px] ">
           <APIProvider apiKey={API_KEY} libraries={["marker"]} onLoad={() => console.log("Google Maps API loaded")}>
             <Map
-              style={{ height: "100%", borderRadius: "20px" }}
-              defaultZoom={13}
-              defaultCenter={{ lat: 34.0522, lng: -118.2437 }}
-              gestureHandling={"greedy"}
-              mapId={MAP_ID}
+            style={{ width: '100%', height: '100%', borderRadius: '0.5rem' }}
+            defaultZoom={12}
+            defaultCenter={{ lat: 33.7701, lng: -118.1937 }}
+            mapId={MAP_ID}
             >
               <GetLocation />
               {currentCafes
-                .filter((cafe) => 
-                  cafe.latitude !== undefined && 
-                  cafe.longitude !== undefined && 
-                  !isNaN(Number(cafe.latitude)) && 
-                  !isNaN(Number(cafe.longitude))
+                .filter(cafe => 
+                cafe.latitude && 
+                cafe.longitude && 
+                !isNaN(Number(cafe.latitude)) && 
+                !isNaN(Number(cafe.longitude))
                 )
-                .map((cafe) => (
+                .map(cafe => (
                   <AdvancedMarker
-                    key={cafe.id || cafe.business_id}
-                    position={{ lat: Number(cafe.latitude), lng: Number(cafe.longitude) }}
+                    key={cafe.id || cafe.place_id}
+                    position={{ 
+                      lat: Number(cafe.latitude), 
+                      lng: Number(cafe.longitude) 
+                    }}
                     title={cafe.name}
+                    onClick={() => navigate(`/cafe/${cafe.id}`)}
                   />
                 ))}
             </Map>

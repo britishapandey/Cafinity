@@ -2,6 +2,7 @@ import React from 'react';
 import { FlagIcon, Star } from 'lucide-react';
 import { addDoc, collection } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase.js';
+import getCafesCollection from '../../utils/cafeCollection';
 
 function Reviews({
     reviews,
@@ -157,7 +158,7 @@ function Reviews({
                       <div className="flex items-start mb-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                           <span className="text-lg font-medium text-gray-600 uppercase">
-                            {review.user.charAt(0)}
+                            {review.user?.charAt(0) || 'A'}
                           </span>
                         </div>
                         <div className="flex-1">

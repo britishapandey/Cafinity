@@ -4,7 +4,8 @@ import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
-import Reviews from "../reviews/Review.jsx"
+import Reviews from "../reviews/Review.jsx";
+import getCafesCollection from '../../utils/cafeCollection';
 
 function CafeView() {
   const [cafeList, setCafeList] = useState([]);
@@ -24,11 +25,11 @@ function CafeView() {
   const [reviewError, setReviewError] = useState(null);
 
   const { id } = useParams();
-  const cafesCollectionRef = collection(db, "cafes");
-
+  
   useEffect(() => {
     const getCafeList = async () => {
       try {
+        const cafesCollectionRef = getCafesCollection();
         const data = await getDocs(cafesCollectionRef);
         const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setCafeList(filteredData);
@@ -37,7 +38,7 @@ function CafeView() {
         const currentCafe = filteredData.find((c) => c.id === id);
         if (currentCafe) {
           // Fetch reviews from subcollection
-          const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+          const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
           const reviewsSnapshot = await getDocs(reviewsCollectionRef);
           const reviewsData = reviewsSnapshot.docs.map(doc => ({
             ...doc.data(),
@@ -112,7 +113,7 @@ function CafeView() {
     }
   
     try {
-      const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
         user: currentUser.displayName || "Anonymous", // Use displayName instead of name
         userId: currentUser.uid,
@@ -146,11 +147,11 @@ function CafeView() {
 
   const updateCafeRatingStats = async (cafeId) => {
     try {
-      const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", cafeId, "reviews");
       const reviewsSnapshot = await getDocs(reviewsCollectionRef);
       const reviews = reviewsSnapshot.docs.map(doc => doc.data());
       
-      const cafeDocRef = doc(db, "cafes", cafeId);
+      const cafeDocRef = doc(db, "googleCafes", cafeId);
       
       // Calculate average rating
       const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -202,7 +203,7 @@ function CafeView() {
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={cafe.images[currentImageIndex].url}
+                src={cafe.images[currentImageIndex]}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />

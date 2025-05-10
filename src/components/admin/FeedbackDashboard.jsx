@@ -13,9 +13,8 @@ import {
   getDoc,
   doc
 } from 'firebase/firestore';
-import FeedbackList from './FeedbackList';
 import ReportedReviews from './ReportedReviews';
-import { useQuery } from 'react-query';
+import getCafesCollection from '../../utils/cafeCollection';
 
 function FeedbackDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -195,7 +194,8 @@ function FeedbackDashboard() {
         
         // Get cafe data if not already fetched
         if (!cafeCache[cafeId]) {
-          const cafeDocRef = doc(db, "cafes", cafeId);
+          const cafesCollectionRef = getCafesCollection();
+          const cafeDocRef = doc(cafesCollectionRef, cafeId);
           const cafeDoc = await getDoc(cafeDocRef);
           
           if (cafeDoc.exists()) {

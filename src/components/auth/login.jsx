@@ -1,9 +1,11 @@
+// Updated src/components/auth/login.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification } from "firebase/auth";
 import { auth, googleProvider } from "../../config/firebase";
 import { updateDoc } from "firebase/firestore";
 import VerificationPopup from "./VerificationPopup";
+import ForgotPassword from "./ForgotPassword";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+  const [showForgotPasswordPopup, setShowForgotPasswordPopup] = useState(false);
   const navigate = useNavigate();
 
   // Regular email login
@@ -48,6 +51,10 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = () => {
+    setShowForgotPasswordPopup(true);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-[#FAF8F5]">
       {/* Original login form */}
@@ -79,6 +86,14 @@ const Login = () => {
             className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-[#B07242]"
             disabled={loading}
           />
+          <button 
+            type="button" 
+            onClick={handleForgotPassword}
+            className="text-[#B07242] text-sm text-right mt-1 hover:underline bg-transparent border-none p-0 m-0 cursor-pointer"
+            style={{ border: 'none', margin: 0, padding: 0 }}
+          >
+            Forgot Password?
+          </button>
         </div>
         {/* Center-align button */}
         <div className="flex justify-center ">
@@ -125,6 +140,13 @@ const Login = () => {
         onClose={() => setShowVerificationPopup(false)}
         isRegistration={false}
       />
+
+      {/* Forgot Password Popup */}
+      {showForgotPasswordPopup && (
+        <ForgotPassword 
+          onClose={() => setShowForgotPasswordPopup(false)} 
+        />
+      )}
     </div>
   );
 };

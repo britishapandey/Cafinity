@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth, db } from "../../config/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
+import ChangePassword from "./ChangePassword";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -22,6 +23,7 @@ function Profile({ setUserRole }) {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [pic, setPic] = useState(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const user = auth.currentUser;
 
@@ -143,6 +145,10 @@ function Profile({ setUserRole }) {
     }
   };
 
+  const handleChangePasswordClick = () => {
+    setShowChangePassword(true);
+  };
+
   const LoadingOverlay = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center gap-4">
@@ -162,6 +168,10 @@ function Profile({ setUserRole }) {
       </div>
     );
   }
+
+  // Check if user is connected via a password-based method or a provider like Google
+  const isPasswordProvider = user.providerData && 
+    user.providerData.some(provider => provider.providerId === 'password');
 
   return (
     <>
@@ -244,21 +254,46 @@ function Profile({ setUserRole }) {
                   </p>
                 </div>
 
-                <button
-                  onClick={handleEditToggle}
-                  className="mt-6 px-6 py-2 bg-[#6B7AEE] text-white rounded-lg 
-                          hover:bg-[#5563d3] transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                <div className="flex flex-wrap gap-4">
+                  <button
+                    onClick={handleEditToggle}
+                    className="px-6 py-2 bg-[#6B7AEE] text-white rounded-lg 
+                            hover:bg-[#5563d3] transition-colors flex items-center gap-2"
                   >
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5a2 2 0 01-1.414.586H4v-2.5a2 2 0 01.586-1.414l8.5-8.5z" />
-                  </svg>
-                  Edit Profile
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.5 8.5a2 2 0 01-1.414.586H4v-2.5a2 2 0 01.586-1.414l8.5-8.5z" />
+                    </svg>
+                    Edit Profile
+                  </button>
+
+                  {/* Only show password change button for users with password auth */}
+                  {isPasswordProvider && (
+                    <button
+                      onClick={handleChangePasswordClick}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg 
+                            hover:bg-gray-200 transition-colors flex items-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Change Password
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="space-y-6">
@@ -338,6 +373,11 @@ function Profile({ setUserRole }) {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <ChangePassword onClose={() => setShowChangePassword(false)} />
+      )}
     </>
   );
 }

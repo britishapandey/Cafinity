@@ -1,4 +1,4 @@
-// scripts/fetchLongBeachCafes.js
+// scripts/populateLongBeachCafes.js
 import { Client as GoogleMapsClient } from '@googlemaps/google-maps-services-js';
 import admin from 'firebase-admin';
 import fs from 'fs';
@@ -83,8 +83,7 @@ async function fetchAndStoreCafes() {
       JSON.stringify(allPlaces, null, 2)
     );
     
-    // Batch save to Firestore
-    let batch = db.batch();
+    // Process each place
     let count = 0;
     
     for (const place of allPlaces) {
@@ -151,22 +150,7 @@ async function fetchAndStoreCafes() {
           });
         }
         
-        // Format reviews
-        const reviews = [];
-        if (details.reviews && details.reviews.length > 0) {
-          details.reviews.forEach(review => {
-            reviews.push({
-              user: review.author_name || 'Anonymous',
-              userId: `google_${review.author_name?.replace(/\s+/g, '_').toLowerCase() || 'anonymous'}`,
-              rating: review.rating || 0,
-              text: review.text || '',
-              date: new Date(review.time * 1000).toISOString(),
-              source: 'google_places'
-            });
-          });
-        }
-        
-        // Create cafe document
+        // Create cafe document (without reviews)
         const cafeDoc = {
           // Basic info
           name: place.name,
@@ -202,8 +186,6 @@ async function fetchAndStoreCafes() {
           website: details.website || '',
           phone: details.formatted_phone_number || '',
           price_level: details.price_level || 0,
-          reviews: reviews,
-          source: 'google_places',
           types: place.types || [],
           
           // Metadata
@@ -211,17 +193,41 @@ async function fetchAndStoreCafes() {
           updated_at: admin.firestore.FieldValue.serverTimestamp()
         };
         
-        // Add to batch
-        const cafeRef = db.collection('googleCafes').doc(place.place_id);
-        batch.set(cafeRef, cafeDoc);
-        count++;
+        // Use a transaction to ensure atomic operations
+        await db.runTransaction(async (transaction) => {
+          // Create a reference to the cafe document
+          const cafeRef = db.collection('googleCafes').doc(place.place_id);
+          
+          // Add the cafe document
+          transaction.set(cafeRef, cafeDoc);
+          
+          // Add reviews as a subcollection
+          if (details.reviews && details.reviews.length > 0) {
+            for (const review of details.reviews) {
+              // Create a unique ID for the review
+              const reviewId = `google_${review.time}_${review.author_name?.replace(/\s+/g, '_').toLowerCase() || 'anonymous'}`;
+              const reviewRef = cafeRef.collection('reviews').doc(reviewId);
+              
+              // Format review data
+              const reviewData = {
+                user: review.author_name || 'Anonymous',
+                userId: `google_${review.author_name?.replace(/\s+/g, '_').toLowerCase() || 'anonymous'}`,
+                rating: review.rating || 0,
+                text: review.text || '',
+                date: new Date(review.time * 1000).toISOString(),
+                source: 'google_places',
+                created_at: admin.firestore.FieldValue.serverTimestamp(),
+                updated_at: admin.firestore.FieldValue.serverTimestamp()
+              };
+              
+              // Add the review to the transaction
+              transaction.set(reviewRef, reviewData);
+            }
+          }
+        });
         
-        // Commit batch when it reaches the limit
-        if (count % 450 === 0) {
-          await batch.commit();
-          console.log(`Committed batch of ${count} cafes`);
-          batch = db.batch();
-        }
+        count++;
+        console.log(`Saved cafe ${place.name} with ID ${place.place_id} and its reviews`);
         
         // Add short delay to be nice to the API
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -230,13 +236,7 @@ async function fetchAndStoreCafes() {
       }
     }
     
-    // Commit remaining batch
-    if (count % 450 !== 0) {
-      await batch.commit();
-      console.log(`Committed final batch of ${count % 450} cafes`);
-    }
-    
-    console.log(`Successfully saved ${count} cafes to Firestore`);
+    console.log(`Successfully saved ${count} cafes to Firestore with reviews as subcollections`);
   } catch (error) {
     console.error('Error fetching cafes:', error);
     throw error;

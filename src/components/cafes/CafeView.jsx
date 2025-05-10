@@ -93,15 +93,21 @@ function CafeView() {
   }, []);
 
   const nextImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === cafe.images.length - 1 ? 0 : prev + 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === cafe.images.length - 1 ? 0 : prev + 1
+      );
+    }
   };
   
   const prevImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === 0 ? cafe.images.length - 1 : prev - 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === 0 ? cafe.images.length - 1 : prev - 1
+      );
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -169,6 +175,38 @@ function CafeView() {
 
   const cafe = cafeList.find((c) => c.id === id);
 
+  // Function to get image URLs from the cafe images array
+  const getImageUrl = (index) => {
+    if (!cafe || !cafe.images || !cafe.images[index]) return null;
+    
+    // Check if the image is already a URL string
+    if (typeof cafe.images[index] === 'string') {
+      return cafe.images[index];
+    }
+    
+    // If it's an object with url property (from the Google API)
+    if (cafe.images[index].url) {
+      return cafe.images[index].url;
+    }
+    
+    return null;
+  };
+  
+  // Get array of all image URLs
+  const getImageUrls = () => {
+    if (!cafe || !cafe.images) return [];
+    
+    return cafe.images.map(image => {
+      if (typeof image === 'string') {
+        return image;
+      }
+      return image.url || null;
+    }).filter(url => url !== null);
+  };
+  
+  // Count the number of valid images
+  const validImageCount = cafe?.images ? getImageUrls().length : 0;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -193,23 +231,26 @@ function CafeView() {
     );
   }
 
+  // Get the image URLs once at the component level
+  const imageUrls = getImageUrls();
+
   return (
     <div className="min-h-screen bg-gray-50">
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Cafe Hero Section */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          {cafe.images && cafe.images.length > 0 ? (
+          {imageUrls.length > 0 ? (
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={cafe.images[currentImageIndex]}
+                src={imageUrls[currentImageIndex]}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               
               {/* Navigation arrows (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <>
                   <button 
                     onClick={prevImage}
@@ -229,9 +270,9 @@ function CafeView() {
               )}
               
               {/* Image counter (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {cafe.images.length}
+                  {currentImageIndex + 1} / {imageUrls.length}
                 </div>
               )}
             </div>

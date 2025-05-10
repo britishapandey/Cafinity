@@ -121,7 +121,7 @@ function CafeView() {
     try {
       const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
-        user: currentUser.displayName || "Anonymous", // Use displayName instead of name
+        user: currentUser.displayName, // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         text: newReview.text,
@@ -132,23 +132,24 @@ function CafeView() {
       };
   
       // Add review to subcollection
-      await addDoc(reviewsCollectionRef, reviewToAdd);
+      const docRef = await addDoc(reviewsCollectionRef, reviewToAdd);
   
       // Update review count and stars in the cafe document
       await updateCafeRatingStats(id);
   
-      // Update local state
-      setReviews(prev => [...prev, reviewToAdd]);
+      // Update local state with the new review (including the document ID)
+      setReviews(prev => [...prev, { ...reviewToAdd, id: docRef.id }]);
+      
+      // Reset form
       setNewReview({ user: "", rating: 5, text: "" });
       setNoiseRating(null);
       setSeatingRating(null);
       setWifiRating(null);
-      setError(null);
       setReviewError(null);
-    } catch (err) { // Fix: use err instead of error for the caught exception
-      console.error("Error submitting review:", err);
-      setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
-    }
+    } catch (err) {
+        console.error("Error submitting review:", err);
+        setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
+      }
   };
 
   const updateCafeRatingStats = async (cafeId) => {

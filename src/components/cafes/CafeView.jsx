@@ -245,37 +245,33 @@ function CafeView() {
 
   const cafe = cafeList.find((c) => c.id === id);
 
-  // Function to get image URLs from the cafe images array
+  // FIXED: Function to get image URL at a specific index
   const getImageUrl = (index) => {
-    if (!cafe || !cafe.images || !cafe.images[index]) return null;
+    if (!cafe || !cafe.images || cafe.images.length <= index) return null;
     
-    // Check if the image is already a URL string
-    if (typeof cafe.images[index] === 'string') {
-      return cafe.images[index];
-    }
+    const image = cafe.images[index];
     
-    // If it's an object with url property (from the Google API)
-    if (cafe.images[index].url) {
-      return cafe.images[index].url;
+    // Handle different image formats
+    if (typeof image === 'string') {
+      return image;
+    } else if (image && typeof image === 'object') {
+      // Handle different object structures
+      if (image.url) return image.url;
+      if (image.src) return image.src;
+      if (image.uri) return image.uri;
     }
     
     return null;
   };
   
-  // Get array of all image URLs
+  // FIXED: Get array of all valid image URLs
   const getImageUrls = () => {
-    if (!cafe || !cafe.images) return [];
+    if (!cafe || !cafe.images || !Array.isArray(cafe.images)) return [];
     
-    return cafe.images.map(image => {
-      if (typeof image === 'string') {
-        return image;
-      }
-      return image.url || null;
-    }).filter(url => url !== null);
+    return cafe.images
+      .map((image, index) => getImageUrl(index))
+      .filter(url => url !== null);
   };
-  
-  // Count the number of valid images
-  const validImageCount = cafe?.images ? getImageUrls().length : 0;
 
   if (loading) {
     return (
@@ -314,7 +310,7 @@ function CafeView() {
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={imageUrls[currentImageIndex]}
+                src={getImageUrl(currentImageIndex)}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />

@@ -181,7 +181,7 @@ function CafeView() {
     try {
       const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
-        user: currentUser.displayName, // Use displayName instead of name
+        user: currentUser.displayName || currentUser.email, // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         text: newReview.text,

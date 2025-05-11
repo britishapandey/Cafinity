@@ -76,7 +76,7 @@ const OwnerDashboard = () => {
         })).filter((cafe) => cafe.ownerId === user.uid);
         setCafes(cafesData);
         
-        // Collect all reviews from all owner's cafes
+        // Collect all reviews from all cafes
         let allReviews = [];
         for (const cafe of cafesData) {
           const reviewsCollectionRef = collection(db, "googleCafes", cafe.id, "reviews");

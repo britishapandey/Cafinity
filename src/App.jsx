@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './config/firebase'; // Firebase config
-import { addDoc, collection, getDocs, getDoc, doc } from 'firebase/firestore';
+import { addDoc, collection, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import Home from './components/Home';
 import Login from './components/auth/login';
 import Register from './components/auth/register';
@@ -17,8 +17,7 @@ import CafeView from './components/cafes/CafeView';
 import UpdateCafe from './components/cafes/updateCafe';
 import CafeRecommender from './components/reccomendations/CafeRecommender'; 
 import AdminPanel from './components/admin/AdminPanel';
-import LongBeachCafes from './components/cafes/LongBeachCafes';
-
+import { NotificationsProvider } from './context/NotificationsContext';
 
 
 function App() {
@@ -30,7 +29,7 @@ function App() {
 
   const [isAuthLoading, setIsAuthLoading] = useState(true); // Add loading state for auth
 
-  // Monitor user authentication state
+  // Updated auth state listener with email verification handling
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -40,7 +39,15 @@ function App() {
         try {
           const userDoc = doc(db, "profiles", currentUser.uid);
           const docSnap = await getDoc(userDoc);
+          
           if (docSnap.exists()) {
+            // If user is now verified but profile doesn't reflect it
+            if (currentUser.emailVerified && !docSnap.data().emailVerified) {
+              await updateDoc(userDoc, {
+                emailVerified: true
+              });
+            }
+            
             setUserRole(docSnap.data().role);
             console.log("User role:", docSnap.data().role);
           } else {
@@ -86,6 +93,21 @@ function App() {
     }
   };
 
+  // Function to get cafes from Firebase (missing in original)
+  const getCafeList = async () => {
+    try {
+      const data = await getDocs(cafesCollectionRef);
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setCafeList(filteredData);
+      setFilteredCafes(filteredData); // Also update filtered cafes
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (isAuthLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -98,104 +120,121 @@ function App() {
   }
 
   return (
-    <div>
-      <header>
-      {/* Pass the user state to the Navbar */}
-      <Navbar user={user} userRole={userRole}/>
-      </header>
+    <NotificationsProvider>
+      <div>
+        <header>
+          {/* Pass the user state to the Navbar */}
+          <Navbar user={user} userRole={userRole}/>
+        </header>
 
-      <Routes>
-        {/* Home route - visible only to authenticated users */}
-        <Route
-          path="/"
-          element={
-            user ? (
-              <>
-                <Home user={user}/>
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+        {/* Add email verification banner */}
+        {user && !user.emailVerified && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-2" role="alert">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-yellow-400 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="font-medium text-sm">Email not verified.</span>
+              <button 
+                onClick={async () => {
+                  try {
+                    await sendEmailVerification(user);
+                    alert("Verification email sent!");
+                  } catch (err) {
+                    console.error("Error sending verification email:", err);
+                  }
+                }} 
+                className="underline ml-2 text-sm text-white-800 hover:text-yellow-900"
+              >
+                Resend verification email
+              </button>
+            </div>
+          </div>
+        )}
 
-        {/* Login route */}
-        <Route
-          path="/login"
-          element={user ? <Navigate to="/" /> : <Login />}
-        />
-
-        {/* Register route */}
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <Register />}
-        />
-
-        {/* Profile route - visible only to authenticated users */}
-        <Route
-          path="/profile"
-          element={user ? 
-            <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/admin"
-          element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
-        />
-
-        <Route
-          path="/search"
-          element={
-            user ? (
-              <>
-                <SearchFilter onSearch={handleSearchSubmit} />
-                <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        {/* <Route
-          path="/longbeach"
-          element={user ? <LongBeachCafes /> : <Navigate to="/login" />}
-        /> */}
-
-        {/* Cafe view route */}
-        <Route
-          path="/cafe/:id"
-          element={
-            <CafeView/> 
-          } 
-        />
-        <Route
-          path="/caferecommender"
-          element={user ? <CafeRecommender /> : <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/business"
-          element={<OwnerDashboard />}
+        <Routes>
+          {/* Home route - visible only to authenticated users */}
+          <Route
+            path="/"
+            element={
+              user ? (
+                <>
+                  <Home user={user}/>
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
 
-        <Route 
-          path="/addcafe"
-          element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+          {/* Login route */}
+          <Route
+            path="/login"
+            element={user && user.emailVerified ? <Navigate to="/" /> : <Login />}
+          />
 
-        <Route
-          path="/cafe/:cafeId"
-          element={user ? <CafeView /> : <Navigate to="/login" />}
-        />
+          {/* Register route */}
+          <Route
+            path="/register"
+            element={user && user.emailVerified ? <Navigate to="/" /> : <Register />}
+          />
 
-        <Route
-          path="/editcafe/:id"
-          element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
-        />
+          {/* Profile route - visible only to authenticated users */}
+          <Route
+            path="/profile"
+            element={user ? 
+              <Profile setUserRole={setUserRole} />: <Navigate to="/login" />}
+          />
 
-      </Routes>
+          <Route
+            path="/admin"
+            element={user && userRole === "admin" ? <AdminPanel /> : <Navigate to="/" />}
+          />
 
+          <Route
+            path="/search"
+            element={
+              user ? (
+                <>
+                  <SearchFilter onSearch={handleSearchSubmit} />
+                  <CafeList cafes={filteredCafes} /> {/* Use filteredCafes here */}
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
 
-    </div>
+          {/* Cafe view route */}
+          <Route
+            path="/cafe/:id"
+            element={
+              <CafeView/> 
+            } 
+          />
+          
+          <Route
+            path="/caferecommender"
+            element={user ? <CafeRecommender /> : <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/business"
+            element={<OwnerDashboard />}
+          />
+
+          <Route 
+            path="/addcafe"
+            element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
+
+          <Route
+            path="/editcafe/:id"
+            element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
+          />
+
+        </Routes>
+      </div>
+    </NotificationsProvider>
   );
 }
 

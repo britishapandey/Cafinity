@@ -60,7 +60,7 @@ const NotificationsDropdown = ({ userRole }) => {
         // Owner sees recent reviews on their cafes
         // First get owner's cafes
         const cafesQuery = query(
-          collection(db, "cafes"),
+          collection(db, "googleCafes"),
           where("ownerId", "==", userId)
         );
         const cafesSnapshot = await getDocs(cafesQuery);
@@ -69,7 +69,7 @@ const NotificationsDropdown = ({ userRole }) => {
         const cafePromises = cafesSnapshot.docs.map(async (cafeDoc) => {
           const cafeData = cafeDoc.data();
           const reviewsQuery = query(
-            collection(db, "cafes", cafeDoc.id, "reviews"),
+            collection(db, "googleCafes", cafeDoc.id, "reviews"),
             orderBy("date", "desc"),
             limit(3)
           );
@@ -156,7 +156,7 @@ const NotificationsDropdown = ({ userRole }) => {
         navigate('/admin');
       } else if (notification.type === 'new_review' && userRole === 'owner') {
         // For cafe owners, update the notificationRead field in the review
-        const reviewDocRef = doc(db, "cafes", notification.cafeId, "reviews", notification.id);
+        const reviewDocRef = doc(db, "googleCafes", notification.cafeId, "reviews", notification.id);
         await updateDoc(reviewDocRef, { notificationRead: true });
         
         navigate(`/cafe/${notification.cafeId}`);
@@ -207,7 +207,7 @@ const NotificationsDropdown = ({ userRole }) => {
             // Need to find the review document reference
             // This simplified version assumes we already have the cafeId and reviewId
             if (notification.cafeId && notification.id) {
-              const reviewDocRef = doc(db, "cafes", notification.cafeId, "reviews", notification.id);
+              const reviewDocRef = doc(db, "googleCafes", notification.cafeId, "reviews", notification.id);
               return updateDoc(reviewDocRef, { notificationRead: true });
             }
           }

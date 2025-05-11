@@ -116,7 +116,7 @@ export const markReviewNotificationAsRead = async (cafeId, reviewId) => {
       throw new Error('Missing cafeId or reviewId');
     }
     
-    await updateDoc(doc(db, "cafes", cafeId, "reviews", reviewId), {
+    await updateDoc(doc(db, "googleCafes", cafeId, "reviews", reviewId), {
       notificationRead: true
     });
     return true;
@@ -162,7 +162,7 @@ export const markAllNotificationsAsRead = async (userId, userRole) => {
     } else if (userRole === 'owner') {
       // Get all cafes owned by the user
       const cafesQuery = query(
-        collection(db, "cafes"),
+        collection(db, "googleCafes"),
         where("ownerId", "==", userId)
       );
       
@@ -173,7 +173,7 @@ export const markAllNotificationsAsRead = async (userId, userRole) => {
       
       for (const cafeDoc of cafesSnapshot.docs) {
         const reviewsQuery = query(
-          collection(db, "cafes", cafeDoc.id, "reviews"),
+          collection(db, "googleCafes", cafeDoc.id, "reviews"),
           where("notificationRead", "!=", true)
         );
         
@@ -181,7 +181,7 @@ export const markAllNotificationsAsRead = async (userId, userRole) => {
         
         reviewsSnapshot.docs.forEach(reviewDoc => {
           updatePromises.push(
-            updateDoc(doc(db, "cafes", cafeDoc.id, "reviews", reviewDoc.id), {
+            updateDoc(doc(db, "googleCafes", cafeDoc.id, "reviews", reviewDoc.id), {
               notificationRead: true
             })
           );
@@ -203,7 +203,7 @@ export const markAllNotificationsAsRead = async (userId, userRole) => {
         const cafePath = reviewDoc.ref.parent.parent.path;
         const cafeId = cafePath.split('/').pop();
         
-        return updateDoc(doc(db, "cafes", cafeId, "reviews", reviewDoc.id), {
+        return updateDoc(doc(db, "googleCafes", cafeId, "reviews", reviewDoc.id), {
           notificationRead: true
         });
       });
@@ -233,7 +233,7 @@ export const deleteNotification = async (notificationId) => {
 export const createReviewNotification = async (review, cafeId, cafeName, ownerId) => {
   try {
     // First, update the review to add the notificationRead field (initially false)
-    const reviewDocRef = doc(db, "cafes", cafeId, "reviews", review.id);
+    const reviewDocRef = doc(db, "googleCafes", cafeId, "reviews", review.id);
     await updateDoc(reviewDocRef, {
       notificationRead: false
     });

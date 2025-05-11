@@ -182,8 +182,15 @@ function Profile({ setUserRole }) {
 
   const handleSave = async () => {
     try {
+      // Update Firestore profile
       const userDocRef = doc(db, "profiles", user.uid);
       await updateDoc(userDocRef, profileData);
+      
+      // Also update Firebase Auth display name
+      await updateProfile(auth.currentUser, {
+        displayName: profileData.name
+      });
+      
       setUserRole(profileData.role);
       localStorage.setItem("userRole", profileData.role);
       setIsEditing(false);

@@ -86,18 +86,19 @@ const Navbar = ({ user, userRole }) => {
             )}
             {user && (
               <li className="mb-4">
-                <button onClick={handleSignOut} className="flex gap-2 m-0 mt-4 text-white">
-                  Sign Out
-                </button>
-              </li>
-            )}
-            {user && (
-              <li className="mb-4">
                 <Link to="/caferecommender" className="flex gap-2 text-white">
                   <Coffee color="#6490E1"/> For You
                 </Link>
               </li>
             )}
+            {user && (
+              <li className="mb-4">
+                <button onClick={handleSignOut} className="flex gap-2 m-0 mt-4 text-white">
+                  Sign Out
+                </button>
+              </li>
+            )}
+            
           </ul>
         </div>
       )}

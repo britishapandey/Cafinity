@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import CafeCard from "./CafeCard";
 import ListNavigation from "../search/ListNavigation";
 import { APIProvider, Map, useMap, AdvancedMarker, InfoWindow } from "@vis.gl/react-google-maps";
@@ -15,6 +15,8 @@ function CafeList({ cafes, showMap, showNav }) {
   const [selectedCafe, setSelectedCafe] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
+  const mapRef = useRef(null);
 
   const totalPages = Math.ceil(cafes.length / cafesPerPage);
   const indexOfLastCafe = currentPage * cafesPerPage;
@@ -37,7 +39,6 @@ function CafeList({ cafes, showMap, showNav }) {
 
   const handleMapView = useCallback((cafe) => {
     setSelectedCafe(cafe);
-    setHoveredCafe(cafe);
     
     // Calculate distance if we have user location
     if (userLocation && cafe.latitude && cafe.longitude) {
@@ -54,49 +55,65 @@ function CafeList({ cafes, showMap, showNav }) {
     }
   }, [userLocation]);
 
-  const GetLocation = () => {
+  const MapComponent = () => {
     const map = useMap();
-
+    
+    // Store map reference for external access
     useEffect(() => {
-      if (map && selectedCafe) {
+      if (map) {
+        mapRef.current = map;
+      }
+    }, [map]);
+
+    // One-time init effect - gets user location and initializes map
+    useEffect(() => {
+      if (map && !mapInitialized) {
+        // Get user location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userPos = { 
+                lat: position.coords.latitude, 
+                lng: position.coords.longitude 
+              };
+              setUserLocation(userPos);
+              map.setCenter(userPos);
+              map.setZoom(13);
+              setMapInitialized(true);
+            },
+            (error) => {
+              console.error("Error getting location:", error);
+              map.setCenter({ lat: 33.7701, lng: -118.1937 }); // Default to Long Beach
+              map.setZoom(13);
+              setMapInitialized(true);
+            },
+            { 
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+            }
+          );
+        } else {
+          // Browser doesn't support geolocation
+          map.setCenter({ lat: 33.7701, lng: -118.1937 });
+          map.setZoom(13);
+          setMapInitialized(true);
+        }
+      }
+    }, [map]);
+
+    // Update map center when a cafe is selected (but respect user's manual panning)
+    useEffect(() => {
+      if (map && selectedCafe && selectedCafe.latitude && selectedCafe.longitude) {
         map.setCenter({ 
           lat: Number(selectedCafe.latitude), 
           lng: Number(selectedCafe.longitude) 
         });
         map.setZoom(15);
-      } else if (map && hoveredCafe) {
-        map.setCenter({ 
-          lat: Number(hoveredCafe.latitude), 
-          lng: Number(hoveredCafe.longitude) 
-        });
-        map.setZoom(15);
       }
-    }, [map, hoveredCafe, selectedCafe]);
-    
-    useEffect(() => {
-      if (navigator.geolocation && !hoveredCafe && !selectedCafe) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userPos = { 
-              lat: position.coords.latitude, 
-              lng: position.coords.longitude 
-            };
-            setUserLocation(userPos);
-            map.setCenter(userPos);
-            map.setZoom(13);
-          },
-          (error) => {
-            console.error("Error getting location:", error);
-            showError(error);
-            // Default to Long Beach center
-            map.setCenter({ lat: 33.7701, lng: -118.1937 });
-            map.setZoom(13);
-          }
-        );
-      }
-    }, [map, hoveredCafe, selectedCafe]);
+    }, [map, selectedCafe]);
 
-    return <></>;
+    return null;
   };
 
   const showError = (error) => {
@@ -145,7 +162,6 @@ function CafeList({ cafes, showMap, showNav }) {
       setCurrentPage(page);
       setShowInput(false);
       setInputPage("");
-      setHoveredCafe(null);
       setSelectedCafe(null);
       setDistanceInfo(null);
     }
@@ -159,6 +175,22 @@ function CafeList({ cafes, showMap, showNav }) {
 
   const handleCafeHover = (cafe) => setHoveredCafe(cafe);
   const handleCafeLeave = () => setHoveredCafe(null);
+  
+  const handleMarkerClick = (cafe) => {
+    setSelectedCafe(cafe);
+    if (userLocation && cafe.latitude && cafe.longitude) {
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        Number(cafe.latitude),
+        Number(cafe.longitude)
+      );
+      setDistanceInfo({
+        cafeName: cafe.name,
+        distance: distance
+      });
+    }
+  };
 
   const pageNumbers = window.innerWidth > 768 ? getPageNumbers() : getPageNumbers().slice(0, 3).concat("...").concat(totalPages);
 
@@ -193,15 +225,25 @@ function CafeList({ cafes, showMap, showNav }) {
       </div>
 
       {showMap && (
-        <div className="lg:w-1/3 h-[600px] ">
-          <APIProvider apiKey={API_KEY} libraries={["marker"]} onLoad={() => console.log("Google Maps API loaded")}>
+        <div className="lg:w-1/3 h-[600px]">
+          <APIProvider 
+            apiKey={API_KEY} 
+            libraries={["marker"]}
+          >
             <Map
               style={{ width: '100%', height: '100%', borderRadius: '0.5rem' }}
               defaultZoom={12}
               defaultCenter={{ lat: 33.7701, lng: -118.1937 }}
               mapId={MAP_ID}
+              gestureHandling="greedy"
+              disableDefaultUI={false}
+              zoomControl={true}
+              streetViewControl={false}
+              mapTypeControl={false}
+              fullscreenControl={true}
+              clickableIcons={false}
             >
-              <GetLocation />
+              <MapComponent />
               
               {/* User location marker with pulsing effect */}
               {userLocation && (
@@ -238,24 +280,10 @@ function CafeList({ cafes, showMap, showNav }) {
                       lng: Number(cafe.longitude) 
                     }}
                     title={cafe.name}
-                    onClick={() => {
-                      setSelectedCafe(cafe);
-                      if (userLocation) {
-                        const distance = calculateDistance(
-                          userLocation.lat,
-                          userLocation.lng,
-                          Number(cafe.latitude),
-                          Number(cafe.longitude)
-                        );
-                        setDistanceInfo({
-                          cafeName: cafe.name,
-                          distance: distance
-                        });
-                      }
-                    }}
+                    onClick={() => handleMarkerClick(cafe)}
                   >
                     {/* Custom styled marker */}
-                    <div className={`w-8 h-8 ${selectedCafe === cafe ? 'bg-red-500' : 'bg-[#B07242]'} rounded-full flex items-center justify-center text-white font-bold border-2 border-white`}>
+                    <div className={`w-8 h-8 ${selectedCafe && selectedCafe.id === cafe.id ? 'bg-red-500' : 'bg-[#B07242]'} rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-md cursor-pointer hover:scale-110 transition-transform`}>
                       {cafe.name.charAt(0)}
                     </div>
                   </AdvancedMarker>

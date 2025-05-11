@@ -3,7 +3,7 @@ import { useNavigate, Link, useMatch } from "react-router-dom";
 import { db, auth } from '../../config/firebase';
 import { doc, query, addDoc, deleteDoc, collection, where, getDocs } from 'firebase/firestore';
 
-function CafeCard({ cafe, onHover, onLeave }) {
+function CafeCard({ cafe, onHover, onLeave, onMapView }) {
   const navigate = useNavigate();
   const [showHours, setShowHours] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false); // Add state for favorite status
@@ -79,6 +79,17 @@ function CafeCard({ cafe, onHover, onLeave }) {
       }
     } catch (error) {
       console.error("Error updating favorite:", error);
+    }
+  };
+  
+  // Handle map icon click to show cafe on map
+  const handleMapView = (e, cafeData) => {
+    e.stopPropagation(); // Prevent navigation
+    if (onMapView) {
+      onMapView(cafeData);
+    } else {
+      // Fallback to simply hovering if onMapView not provided
+      onHover(cafeData);
     }
   };
 
@@ -161,23 +172,48 @@ function CafeCard({ cafe, onHover, onLeave }) {
               >
                 {cafe.name}
               </h3>
-              <svg
-                  onClick={handleFavoriteToggle}
-                  className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'} cursor-pointer ml-2`}
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  fill={isFavorite ? "currentColor" : "none"}
-                  strokeWidth="2"
-                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                  role="button"
-                  tabIndex="0"
-              >
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
+              <div className="flex items-center">
+                <svg
+                    onClick={handleFavoriteToggle}
+                    className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'} cursor-pointer mr-2`}
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    fill={isFavorite ? "currentColor" : "none"}
+                    strokeWidth="2"
+                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    role="button"
+                    tabIndex="0"
+                >
+                  <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+                
+                <svg
+                    onClick={(e) => handleMapView(e, cafe)}
+                    className="w-6 h-6 text-blue-500 cursor-pointer"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-label="View on map"
+                    role="button"
+                    tabIndex="0"
+                >
+                  <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                  />
+                </svg>
+              </div>
             </div>
 
             <div className="text-gray-600 mb-4 flex items-start">

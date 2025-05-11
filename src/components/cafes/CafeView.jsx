@@ -181,7 +181,7 @@ function CafeView() {
     try {
       const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
-        user: currentUser.displayName || currentUser.email, // Use displayName instead of name
+        user: currentUser.displayName, // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         text: newReview.text,
@@ -244,34 +244,19 @@ function CafeView() {
   };
 
   const cafe = cafeList.find((c) => c.id === id);
-
-  // FIXED: Function to get image URL at a specific index
-  const getImageUrl = (index) => {
-    if (!cafe || !cafe.images || cafe.images.length <= index) return null;
+  
+  // Get array of all image URLs
+  const getImageUrls = () => {
+    if (!cafe || !cafe.images) return [];
     
-    const image = cafe.images[index];
-    
-    // Handle different image formats
-    if (typeof image === 'string') {
-      return image;
-    } else if (image && typeof image === 'object') {
-      // Handle different object structures
-      if (image.url) return image.url;
-      if (image.src) return image.src;
-      if (image.uri) return image.uri;
-    }
-    
-    return null;
+    return cafe.images.map(image => {
+      if (typeof image === 'string') {
+        return image;
+      }
+      return image.url || null;
+    }).filter(url => url !== null);
   };
   
-  // FIXED: Get array of all valid image URLs
-  const getImageUrls = () => {
-    if (!cafe || !cafe.images || !Array.isArray(cafe.images)) return [];
-    
-    return cafe.images
-      .map((image, index) => getImageUrl(index))
-      .filter(url => url !== null);
-  };
 
   if (loading) {
     return (
@@ -310,7 +295,7 @@ function CafeView() {
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={getImageUrl(currentImageIndex)}
+                src={imageUrls[currentImageIndex]}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />

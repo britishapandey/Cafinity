@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import CafeCard from "./CafeCard";
 import ListNavigation from "../search/ListNavigation";
+import { useNavigate } from "react-router-dom";
 import { APIProvider, Map, useMap, AdvancedMarker, InfoWindow } from "@vis.gl/react-google-maps";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAP_ID;
 
 function CafeList({ cafes, showMap, showNav }) {
+  const navigate = useNavigate();
   const cafesPerPage = 50;
   const [currentPage, setCurrentPage] = useState(1);
   const [showInput, setShowInput] = useState(false);
@@ -204,9 +206,16 @@ function CafeList({ cafes, showMap, showNav }) {
 
         {/* Distance Info when showing on map */}
         {distanceInfo && (
-          <div className="mx-8 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">
-              <strong>{distanceInfo.cafeName}</strong> is <strong>{distanceInfo.distance} miles</strong> from your current location
+          <div className="mx-8 mb-4 p-3 bg-[#F0ECE3] border border-[#B07242] rounded-lg shadow-sm">
+            <p className="text-[#5B4A43] flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#B07242]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <strong className="font-medium text-[#B07242]">{distanceInfo.cafeName}</strong>
+              <span className="mx-1">is</span>
+              <strong className="font-medium text-[#B07242]">{distanceInfo.distance} miles</strong>
+              <span className="ml-1">from your current location</span>
             </p>
           </div>
         )}
@@ -302,7 +311,20 @@ function CafeList({ cafes, showMap, showNav }) {
                   }}
                 >
                   <div className="p-3 max-w-xs">
-                    <h3 className="font-bold text-[#5B4A43] text-lg">{selectedCafe.name}</h3>
+                   <h3 
+                      onClick={() => navigate(`/cafe/${selectedCafe.id}`)}
+                      className="font-bold text-[#5B4A43] text-lg cursor-pointer hover:text-[#B07242] flex items-center group transition-colors"
+                      title="View café details"
+                    >
+                      {selectedCafe.name}
+                      <svg xmlns="http://www.w3.org/2000/svg" 
+                        className="h-4 w-4 ml-1 text-gray-400 group-hover:text-[#B07242] transition-colors" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </h3>
                     <p className="text-sm text-gray-600">{selectedCafe.address}</p>
                     {selectedCafe.stars && (
                       <div className="flex items-center mt-1">

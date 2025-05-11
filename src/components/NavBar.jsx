@@ -91,6 +91,13 @@ const Navbar = ({ user, userRole }) => {
                 </button>
               </li>
             )}
+            {user && (
+              <li className="mb-4">
+                <Link to="/caferecommender" className="flex gap-2 text-white">
+                  <Coffee color="#6490E1"/> For You
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
       )}

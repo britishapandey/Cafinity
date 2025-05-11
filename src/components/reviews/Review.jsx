@@ -2,6 +2,7 @@ import React from 'react';
 import { FlagIcon, Star } from 'lucide-react';
 import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase.js';
+import getCafesCollection from '../../utils/cafeCollection';
 import { createNotification, createReviewNotification, createFlaggedReviewNotification } from '../../models/NotificationModel';
 
 function Reviews({
@@ -68,14 +69,25 @@ function Reviews({
         
         const reportsRef = collection(db, "reported");
         const reportedReview = {
-          reportedUser: review.user || "Anonymous",
+          // Review details
+          reviewId: review.id,
           reviewContent: review.text,
           reviewRating: review.rating,
+          
+          // Cafe details
+          cafeId: cafe.id,
+          cafeName: cafe.name,
+          
+          // Original reviewer info
+          reportedUser: review.user || "Anonymous",
+          
+          // Reporting user info
+          reportedBy: auth.currentUser.displayName || auth.currentUser.email || "Unknown user",
+          reporterUid: auth.currentUser.uid,
+          
+          // Meta info
           reason: `Flagged by ${auth.currentUser.displayName || auth.currentUser.email || "a user"}`,
           dateReported: new Date().toISOString(),
-          cafeId: cafe.id, // Make sure to include the cafe ID
-          cafeName: cafe.name, // Make sure to include the cafe name
-          reviewId: review.id, // Include the review ID for reference
           read: false // Initialize as unread
         };
         
@@ -223,13 +235,13 @@ function Reviews({
                       <div className="flex items-start mb-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                           <span className="text-lg font-medium text-gray-600 uppercase">
-                            {review.user.charAt(0)}
+                            {review.user?.charAt(0) || 'A'}
                           </span>
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start">
                             <h4 className="font-medium text-gray-900">
-                              {review.user || 'Anonymous'}
+                              {review.user}
                             </h4>
                             <span className="text-xs text-gray-500">
                               {new Date(review.date).toLocaleDateString()}

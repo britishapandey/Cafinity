@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { db } from '../../config/firebase';
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import getCafesCollection from '../../utils/cafeCollection';
 
 function UpdateCafe({ storage }) { // Add storage as a prop
   const {id} = useParams();
@@ -45,6 +45,7 @@ function UpdateCafe({ storage }) { // Add storage as a prop
   const daysOfWeek = ["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"];
   
   const formatTime = (time) => {
+    if (!time) return "";
     const [hours, minutes] = time.split(':');
     const hourNum = parseInt(hours);
     const minNum = parseInt(minutes) || 0;
@@ -55,41 +56,48 @@ function UpdateCafe({ storage }) { // Add storage as a prop
   const getCafe = async () => {
     setLoading(true);
     try {
-        const cafeDoc = doc(db, "cafes", id);
-        const docSnap = await getDoc(cafeDoc); // await getDoc(cafeDoc);
-        if (docSnap) {
+        const cafesCollectionRef = getCafesCollection();
+        const cafeDoc = doc(cafesCollectionRef, id);
+        const docSnap = await getDoc(cafeDoc);
+        if (docSnap.exists()) {
           console.log("Document data:", docSnap.data());
           setNewCafeName(docSnap.data().name);
           setNewCafeAddress(docSnap.data().address);
           setNewCafeCity(docSnap.data().city);
           setNewCafeState(docSnap.data().state);
           setNewCafePostalCode(docSnap.data().postal_code);
-          setCafeCreditCard(docSnap.data().attributes.BusinessAcceptsCreditCards);
-          setCafeBikeParking(docSnap.data().attributes.BikeParking);
-          setCafeNoiseLevel(docSnap.data().attributes.NoiseLevel);
-          setCafeGoodForGroups(docSnap.data().attributes.RestaurantsGoodForGroups);
-          setCafeOutdoorSeating(docSnap.data().attributes.OutdoorSeating);
-          setCafeDriveThru(docSnap.data().attributes.DriveThru);
-          setCafeWiFi(docSnap.data().attributes.WiFi);
+          setCafeCreditCard(docSnap.data().attributes?.BusinessAcceptsCreditCards === "True");
+          setCafeBikeParking(docSnap.data().attributes?.BikeParking === "True");
+          setCafeNoiseLevel(docSnap.data().attributes?.NoiseLevel === "u'quiet'");
+          setCafeGoodForGroups(docSnap.data().attributes?.RestaurantsGoodForGroups === "True");
+          setCafeOutdoorSeating(docSnap.data().attributes?.OutdoorSeating === "True");
+          setCafeDriveThru(docSnap.data().attributes?.DriveThru === "True");
+          setCafeWiFi(docSnap.data().attributes?.WiFi === "u'free'");
           setNewCafeAttributes({
-            BusinessAcceptsCreditCards: cafeCreditCard,
-            BikeParking: cafeBikeParking,
-            NoiseLevel: cafeNoiseLevel,
-            RestaurantsGoodForGroups: cafeGoodForGroups,
-            OutdoorSeating: cafeOutdoorSeating,
-            DriveThru: cafeDriveThru,
-            WiFi: cafeWiFi,
-          }
-          );
-          Object.entries(docSnap.data().hours).forEach(([day, hours]) => {
-            const openHours = hours.split("-")[0];
-            const closeHours = hours.split("-")[1];
-            console.log(`${day}: ${openHours} - ${closeHours}`);
-            setNewCafeHours((prev) => ({ ...prev, [day]: {
-              open: formatTime(openHours),
-              close: formatTime(closeHours),
-            } }));
+            BusinessAcceptsCreditCards: cafeCreditCard ? "True" : "False",
+            BikeParking: cafeBikeParking ? "True" : "False",
+            NoiseLevel: cafeNoiseLevel ? "u'quiet'" : "u'average'",
+            RestaurantsGoodForGroups: cafeGoodForGroups ? "True" : "False",
+            OutdoorSeating: cafeOutdoorSeating ? "True" : "False",
+            DriveThru: cafeDriveThru ? "True" : "False",
+            WiFi: cafeWiFi ? "u'free'" : "False",
           });
+          if (docSnap.data().hours) {
+            Object.entries(docSnap.data().hours).forEach(([day, hours]) => {
+              if (hours && hours.includes("-")) {
+                const [openHours, closeHours] = hours.split("-");
+                console.log(`${day}: ${openHours} - ${closeHours}`);
+                setNewCafeHours((prev) => ({ ...prev, [day]: {
+                  open: formatTime(openHours),
+                  close: formatTime(closeHours),
+                } }));
+              }
+            });
+          }
+          // Initialize images
+          if (docSnap.data().images && docSnap.data().images.length > 0) {
+            setNewCafeImages(docSnap.data().images);
+          }
         } else {
           console.log("Cafe ID not found.");
         }
@@ -102,7 +110,20 @@ function UpdateCafe({ storage }) { // Add storage as a prop
 
   useEffect(() => {
     getCafe();
-  }, [])
+  }, []);
+
+  // Update attributes whenever a checkbox changes
+  useEffect(() => {
+    setNewCafeAttributes({
+      BusinessAcceptsCreditCards: cafeCreditCard ? "True" : "False",
+      BikeParking: cafeBikeParking ? "True" : "False",
+      NoiseLevel: cafeNoiseLevel ? "u'quiet'" : "u'average'",
+      RestaurantsGoodForGroups: cafeGoodForGroups ? "True" : "False",
+      OutdoorSeating: cafeOutdoorSeating ? "True" : "False",
+      DriveThru: cafeDriveThru ? "True" : "False",
+      WiFi: cafeWiFi ? "u'free'" : "False",
+    });
+  }, [cafeCreditCard, cafeBikeParking, cafeNoiseLevel, cafeGoodForGroups, cafeOutdoorSeating, cafeDriveThru, cafeWiFi]);
 
   const handleImageUrl = () => {
     if (imageUrl) {
@@ -127,7 +148,8 @@ function UpdateCafe({ storage }) { // Add storage as a prop
 
   const onSubmitCafe = async (newCafe) => {
     try {
-      const cafeDoc = doc(db, "cafes", id);
+      const cafesCollectionRef = getCafesCollection();
+      const cafeDoc = doc(cafesCollectionRef, id);
       await updateDoc(cafeDoc, newCafe);
       alert("Cafe updated.");
     } catch (err) {
@@ -168,7 +190,8 @@ function UpdateCafe({ storage }) { // Add storage as a prop
   const navigate = useNavigate();
   const handleDeleteCafe = async () => {
     try {
-      const cafeDoc = doc(db, "cafes", id);
+      const cafesCollectionRef = getCafesCollection();
+      const cafeDoc = doc(cafesCollectionRef, id);
       await deleteDoc(cafeDoc);
       navigate(-1);
       console.log("Cafe deleted successfully.");
@@ -239,39 +262,39 @@ function UpdateCafe({ storage }) { // Add storage as a prop
           <h4 className="text-lg font-semibold mb-4">Amenities</h4>
           <FormGroup className="grid grid-cols-2 gap-4">
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeCreditCard === "true"} />}
+              control={<Checkbox checked={cafeCreditCard} />}
               label="Accepts Credit Card"
               onChange={(e) => setCafeCreditCard(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeBikeParking === "true"} />}
+              control={<Checkbox checked={cafeBikeParking} />}
               label="Bike Parking"
               onChange={(e) => setCafeBikeParking(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeNoiseLevel.includes("quiet")} />}
+              control={<Checkbox checked={cafeNoiseLevel} />}
               label="Quiet"
-              onChange={(e) => setCafeNoiseLevel(e.target.checked ? "quiet" : "")}
+              onChange={(e) => setCafeNoiseLevel(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeGoodForGroups === "true"} />}
+              control={<Checkbox checked={cafeGoodForGroups} />}
               label="Good for Groups"
               onChange={(e) => setCafeGoodForGroups(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeOutdoorSeating === "true"} />}
+              control={<Checkbox checked={cafeOutdoorSeating} />}
               label="Outdoor Seating"
               onChange={(e) => setCafeOutdoorSeating(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeDriveThru === "true"} />}
+              control={<Checkbox checked={cafeDriveThru} />}
               label="Drive Thru"
               onChange={(e) => setCafeDriveThru(e.target.checked)}
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked={cafeWiFi.includes("free")} />}
+              control={<Checkbox checked={cafeWiFi} />}
               label="WiFi"
-              onChange={(e) => setCafeWiFi(e.target.checked ? "free" : "")}
+              onChange={(e) => setCafeWiFi(e.target.checked)}
             />
           </FormGroup>
         </div>

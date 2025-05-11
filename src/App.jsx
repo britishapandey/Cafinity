@@ -93,6 +93,21 @@ function App() {
     }
   };
 
+  // Function to get cafes from Firebase (missing in original)
+  const getCafeList = async () => {
+    try {
+      const data = await getDocs(cafesCollectionRef);
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setCafeList(filteredData);
+      setFilteredCafes(filteredData); // Also update filtered cafes
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (isAuthLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -197,6 +212,7 @@ function App() {
               <CafeView/> 
             } 
           />
+          
           <Route
             path="/caferecommender"
             element={user ? <CafeRecommender /> : <Navigate to="/login" />}
@@ -212,18 +228,13 @@ function App() {
             element={<CafeForm onSubmitCafe={onSubmitCafe}/>}/>
 
           <Route
-            path="/cafe/:cafeId"
-            element={user ? <CafeView /> : <Navigate to="/login" />}
-          />
-
-          <Route
             path="/editcafe/:id"
             element={user ? <UpdateCafe onSubmitCafe={onSubmitCafe} /> : <Navigate to="/login" />}
           />
 
         </Routes>
       </div>
-      </NotificationsProvider>
+    </NotificationsProvider>
   );
 }
 

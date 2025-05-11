@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
-import {collection, getDocs, query, where} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import CafeList from "./cafes/CafeList";
 import { Filter } from "lucide-react";
 import { useFloating, useInteractions, useClick, useDismiss } from "@floating-ui/react";
+import getCafesCollection from "../utils/cafeCollection";
 
 const Home = ({ user }) => {
   const [cafeList, setCafeList] = useState([]);
@@ -38,8 +39,6 @@ const Home = ({ user }) => {
   const filterRef = filterRefs.setReference;
   const filterProps = getFilterReferenceProps();
 
-  const cafesCollectionRef = collection(db, "cafes");
-
   const fetchUserFavorites = async () => {
     if (!user) return;
 
@@ -58,6 +57,7 @@ const Home = ({ user }) => {
   const getCafeList = async () => {
     try {
       setIsLoading(true);
+      const cafesCollectionRef = getCafesCollection();
       const data = await getDocs(cafesCollectionRef);
       const filteredData = data.docs.map((doc) => ({
         ...doc.data(),
@@ -130,7 +130,7 @@ const Home = ({ user }) => {
         <div className="my-4 px-4 flex gap-2 items-center w-full">
         <button 
           ref={filterRef} {...filterProps}
-          className="px-4 py-2 text-white rounded-lg hover:bg-blue-600 hover:text-white transition-colors">
+          className="px-4 py-2  bg-[#5B4A43] text-white rounded-lg hover:bg-[#4A3C36] transition-colors">
           <Filter />
         </button>
         {filterOpen && (
@@ -261,7 +261,7 @@ const Home = ({ user }) => {
           </div>
         <button
           onClick={() => setShowMap(!showMap)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2  bg-[#5B4A43] text-white rounded-lg hover:bg-[#4A3C36] transition-colors"
         >
           {showMap ? (
             <>

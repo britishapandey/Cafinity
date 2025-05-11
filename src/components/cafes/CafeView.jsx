@@ -4,7 +4,8 @@ import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc } from 'firebase/firestore';
 import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
-import Reviews from "../reviews/Review.jsx"
+import Reviews from "../reviews/Review.jsx";
+import getCafesCollection from '../../utils/cafeCollection';
 
 function CafeView() {
   const [cafeList, setCafeList] = useState([]);
@@ -26,11 +27,11 @@ function CafeView() {
   const [reviewError, setReviewError] = useState(null);
 
   const { id } = useParams();
-  const cafesCollectionRef = collection(db, "cafes");
-
+  
   useEffect(() => {
     const getCafeList = async () => {
       try {
+        const cafesCollectionRef = getCafesCollection();
         const data = await getDocs(cafesCollectionRef);
         const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setCafeList(filteredData);
@@ -39,7 +40,7 @@ function CafeView() {
         const currentCafe = filteredData.find((c) => c.id === id);
         if (currentCafe) {
           // Fetch reviews from subcollection
-          const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+          const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
           const reviewsSnapshot = await getDocs(reviewsCollectionRef);
           const reviewsData = reviewsSnapshot.docs.map(doc => ({
             ...doc.data(),
@@ -152,15 +153,21 @@ function CafeView() {
   }, []);
 
   const nextImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === cafe.images.length - 1 ? 0 : prev + 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === cafe.images.length - 1 ? 0 : prev + 1
+      );
+    }
   };
   
   const prevImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === 0 ? cafe.images.length - 1 : prev - 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === 0 ? cafe.images.length - 1 : prev - 1
+      );
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -172,9 +179,9 @@ function CafeView() {
     }
   
     try {
-      const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
-        user: currentUser.displayName || "Anonymous", // Use displayName instead of name
+        user: currentUser.displayName, // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         text: newReview.text,
@@ -185,7 +192,7 @@ function CafeView() {
       };
   
       // Add review to subcollection
-      await addDoc(reviewsCollectionRef, reviewToAdd);
+      const docRef = await addDoc(reviewsCollectionRef, reviewToAdd);
 
       // add ID to review object for notif purposes
       const reviewWithId = {
@@ -196,17 +203,18 @@ function CafeView() {
       // Update review count and stars in the cafe document
       await updateCafeRatingStats(id);
   
-      // Update local state
-      setReviews(prev => [...prev, reviewToAdd]);
+      // Update local state with the new review (including the document ID)
+      setReviews(prev => [...prev, { ...reviewToAdd, id: docRef.id }]);
+      
+      // Reset form
       setNewReview({ user: "", rating: 5, text: "" });
       setNoiseRating(null);
       setSeatingRating(null);
       setWifiRating(null);
-      setError(null);
       setReviewError(null);
 
-      return reviewWithId; // return the new review with ID for notif purp
-    } catch (err) { // Fix: use err instead of error for the caught exception
+      return reviewWithId; // return the new review with ID for notif purposes
+    } catch (err) { // Use err instead of error for the caught exception
       console.error("Error submitting review:", err);
       setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
       throw err; // Rethrow error for notification handling
@@ -215,11 +223,11 @@ function CafeView() {
 
   const updateCafeRatingStats = async (cafeId) => {
     try {
-      const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", cafeId, "reviews");
       const reviewsSnapshot = await getDocs(reviewsCollectionRef);
       const reviews = reviewsSnapshot.docs.map(doc => doc.data());
       
-      const cafeDocRef = doc(db, "cafes", cafeId);
+      const cafeDocRef = doc(db, "googleCafes", cafeId);
       
       // Calculate average rating
       const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -236,6 +244,38 @@ function CafeView() {
   };
 
   const cafe = cafeList.find((c) => c.id === id);
+
+  // Function to get image URLs from the cafe images array
+  const getImageUrl = (index) => {
+    if (!cafe || !cafe.images || !cafe.images[index]) return null;
+    
+    // Check if the image is already a URL string
+    if (typeof cafe.images[index] === 'string') {
+      return cafe.images[index];
+    }
+    
+    // If it's an object with url property (from the Google API)
+    if (cafe.images[index].url) {
+      return cafe.images[index].url;
+    }
+    
+    return null;
+  };
+  
+  // Get array of all image URLs
+  const getImageUrls = () => {
+    if (!cafe || !cafe.images) return [];
+    
+    return cafe.images.map(image => {
+      if (typeof image === 'string') {
+        return image;
+      }
+      return image.url || null;
+    }).filter(url => url !== null);
+  };
+  
+  // Count the number of valid images
+  const validImageCount = cafe?.images ? getImageUrls().length : 0;
 
   if (loading) {
     return (
@@ -261,23 +301,26 @@ function CafeView() {
     );
   }
 
+  // Get the image URLs once at the component level
+  const imageUrls = getImageUrls();
+
   return (
     <div className="min-h-screen bg-gray-50">
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Cafe Hero Section */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          {cafe.images && cafe.images.length > 0 ? (
+          {imageUrls.length > 0 ? (
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={cafe.images[currentImageIndex].url}
+                src={imageUrls[currentImageIndex]}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               
               {/* Navigation arrows (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <>
                   <button 
                     onClick={prevImage}
@@ -297,9 +340,9 @@ function CafeView() {
               )}
               
               {/* Image counter (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {cafe.images.length}
+                  {currentImageIndex + 1} / {imageUrls.length}
                 </div>
               )}
             </div>

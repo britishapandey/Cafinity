@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, User, CirclePlus, Menu, ArrowRight, Store, BarChart } from "lucide-react"; // Added BarChart for admin
+import { Home, User, CirclePlus, Menu, ArrowRight, Store, BarChart, Coffee } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
 import NotificationsDropdown from "./notifications/NotificationsDropdown";
@@ -55,6 +55,11 @@ const Navbar = ({ user, userRole }) => {
                 <Home color="#6490E1"/> Home
               </Link>
             </li>
+            {/* <li className="mb-4">
+              <Link to="/longbeach" className="flex gap-2 text-white">
+                <Coffee color="#6490E1"/> Long Beach Cafes
+              </Link>
+            </li> */}
             <li className="mb-4">
               <Link to="/profile" className="flex gap-2 text-white">
                 <User color="#6490E1"/> Profile

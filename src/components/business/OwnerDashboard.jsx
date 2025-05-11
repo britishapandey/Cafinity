@@ -5,6 +5,8 @@ import CafeList from '../cafes/CafeList';
 import SentimentSummary from '../admin/SentimentSummary';
 import FeedbackChart from '../admin/FeedbackChart';
 import { onAuthStateChanged } from "firebase/auth";
+import getCafesCollection from '../../utils/cafeCollection';
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -15,7 +17,6 @@ const OwnerDashboard = () => {
   const [error, setError] = useState("");
   const [cafes, setCafes] = useState([]); // State for cafe list
   const [reviews, setReviews] = useState([]);
-  const cafesCollectionRef = collection(db, "cafes");
   const [sentimentData, setSentimentData] = useState({
     positive: 0,
     neutral: 0,
@@ -66,7 +67,9 @@ const OwnerDashboard = () => {
         const userSnapshot = await getDoc(userDocRef);
         const profile = userSnapshot.data();
         setOwnerName(profile.name);
-        const cafesSnapshot = await getDocs(collection(db, "cafes"));
+        
+        const cafesCollectionRef = getCafesCollection();
+        const cafesSnapshot = await getDocs(cafesCollectionRef);
         const cafesData = cafesSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
@@ -75,16 +78,17 @@ const OwnerDashboard = () => {
         
         // Collect all reviews from all cafes
         let allReviews = [];
-        cafesData.forEach(cafe => {
-          if (cafe.reviews && Array.isArray(cafe.reviews)) {
-            const cafeReviews = cafe.reviews.map(review => ({
-              ...review,
-              cafeName: cafe.name,
-              cafeId: cafe.id
-            }));
-            allReviews = [...allReviews, ...cafeReviews];
-          }
-        });
+        for (const cafe of cafesData) {
+          const reviewsCollectionRef = collection(db, "googleCafes", cafe.id, "reviews");
+          const reviewsSnapshot = await getDocs(reviewsCollectionRef);
+          const cafeReviews = reviewsSnapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id,
+            cafeName: cafe.name,
+            cafeId: cafe.id
+          }));
+          allReviews = [...allReviews, ...cafeReviews];
+        }
         
         // Sort reviews by date (newest first)
         allReviews.sort((a, b) => new Date(b.date) - new Date(a.date));

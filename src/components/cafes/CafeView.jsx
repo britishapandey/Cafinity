@@ -615,6 +615,7 @@ function CafeView() {
             handleInputChange={handleInputChange}
             attributeRatings={attributeRatings}
             setAttributeRatings={setAttributeRatings}
+            originalHandleReviewSubmit={handleReviewSubmit}
             currentUser={currentUser}
             reviewError={reviewError}
             cafe={cafe}

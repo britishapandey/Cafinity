@@ -17,6 +17,7 @@ function Reviews({
     reviews,
     newReview,
     handleInputChange,
+    originalHandleReviewSubmit,
     attributeRatings,
     setAttributeRatings,
     currentUser,
@@ -181,7 +182,7 @@ function Reviews({
                   Rate Amenities
                 </label>
                 {Object.entries(attributeRatings).map(([key, value]) => (
-                  <div className="flex items-center justify-between">
+                  <div key={key} className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
                     <select
                       onChange={(e) => setAttributeRatings({...attributeRatings, [key]: e.target.value ? parseInt(e.target.value) : null})}
@@ -280,7 +281,7 @@ function Reviews({
                               return value !== null;
                             }
                             ).map(([key, value]) => (
-                              <div className="">
+                              <div key={key} className="">
                                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                                 {key.replace(/([A-Z])/g, ' $1').trim()}: {value}/5
                                 </span>

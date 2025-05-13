@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Home, User, CirclePlus, Menu, ArrowRight, Store, BarChart } from "lucide-react"; // Added BarChart for admin
+import { Home, User, CirclePlus, Menu, ArrowRight, Store, BarChart, Coffee } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../config/firebase"; // Import Firebase auth
+import NotificationsDropdown from "./notifications/NotificationsDropdown";
 
 const Navbar = ({ user, userRole }) => {
   const handleSignOut = async () => {
@@ -24,9 +25,14 @@ const Navbar = ({ user, userRole }) => {
       <div className="flex justify-between items-center w-full py-4 px-8">
         <a className="text-white text-2xl font-bold" href="/">Cafinity</a>
         <div className="flex items-center">
-          {user ? (<button onClick={toggleSidebar} className="text-white p-2">
-            <Menu />
-          </button>) : (
+          {user ? (
+            <>
+              <NotificationsDropdown userRole={userRole} />
+              <button onClick={toggleSidebar} className="text-white p-2">
+                <Menu />
+              </button>
+          </>
+          ) : (
               <button className="">
                 <Link to="/login" className="flex gap-2 m-0 text-white">
                   Sign In
@@ -49,6 +55,11 @@ const Navbar = ({ user, userRole }) => {
                 <Home color="#6490E1"/> Home
               </Link>
             </li>
+            {/* <li className="mb-4">
+              <Link to="/longbeach" className="flex gap-2 text-white">
+                <Coffee color="#6490E1"/> Long Beach Cafes
+              </Link>
+            </li> */}
             <li className="mb-4">
               <Link to="/profile" className="flex gap-2 text-white">
                 <User color="#6490E1"/> Profile
@@ -75,11 +86,19 @@ const Navbar = ({ user, userRole }) => {
             )}
             {user && (
               <li className="mb-4">
+                <Link to="/caferecommender" className="flex gap-2 text-white">
+                  <Coffee color="#6490E1"/> For You
+                </Link>
+              </li>
+            )}
+            {user && (
+              <li className="mb-4">
                 <button onClick={handleSignOut} className="flex gap-2 m-0 mt-4 text-white">
                   Sign Out
                 </button>
               </li>
             )}
+            
           </ul>
         </div>
       )}

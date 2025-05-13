@@ -1,5 +1,7 @@
 # **Cafinity** ☕
 
+Live Demo: https://cafinity-b5a39.web.app/
+
 ## **Description**
 Cafinity is an application that helps users locate nearby cafes, view detailed information about each cafe, and filter them based on various amenities such as Wi-Fi availability, seating options, and more. The app allows users to explore cafe hours, images, and locations, making it easier to find the perfect spot for a coffee break or study session.
 

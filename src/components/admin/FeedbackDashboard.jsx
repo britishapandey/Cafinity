@@ -13,9 +13,8 @@ import {
   getDoc,
   doc
 } from 'firebase/firestore';
-import FeedbackList from './FeedbackList';
 import ReportedReviews from './ReportedReviews';
-import { useQuery } from 'react-query';
+import getCafesCollection from '../../utils/cafeCollection';
 
 function FeedbackDashboard() {
   const [reviews, setReviews] = useState([]);
@@ -85,16 +84,35 @@ function FeedbackDashboard() {
   // flag review for later consideration
   const handleReportReview = async (review) => {
     try {
+      if (!auth.currentUser) {
+        alert("You must be logged in to report a review.");
+        return;
+      }
+      
       const reportsRef = collection(db, "reported");
       const reportedReview = {
-        reportedUser: review.user || "Anonymous",
+        // Review details
+        reviewId: review.id,
         reviewContent: review.text,
-        reason: `Flagged by ${auth.currentUser.displayName}`,
+        
+        // Cafe details
+        cafeId: review.cafeId,
+        cafeName: review.cafeName || "Unknown Cafe",
+        
+        // Original reviewer info
+        reportedUser: review.user || "Anonymous",
+        
+        // Reporting user info
+        reportedBy: auth.currentUser.displayName || auth.currentUser.email || "Unknown user",
+        reporterUid: auth.currentUser.uid,
+        
+        // Meta info
+        reason: `Flagged by ${auth.currentUser.displayName || auth.currentUser.email || "Unknown user"}`,
         dateReported: new Date().toISOString()
       };
       
       await addDoc(reportsRef, reportedReview);
-      alert("Report sent to admin successfully.")
+      alert("Report sent to admin successfully.");
     } catch (err) {
       console.error("Error reporting review:", err);
       alert("Could not report review. Please try again later.");
@@ -195,7 +213,8 @@ function FeedbackDashboard() {
         
         // Get cafe data if not already fetched
         if (!cafeCache[cafeId]) {
-          const cafeDocRef = doc(db, "cafes", cafeId);
+          const cafesCollectionRef = getCafesCollection();
+          const cafeDocRef = doc(cafesCollectionRef, cafeId);
           const cafeDoc = await getDoc(cafeDocRef);
           
           if (cafeDoc.exists()) {
@@ -384,7 +403,7 @@ function FeedbackDashboard() {
                               {review.cafeName}
                             </a>
                             <p className="text-sm text-gray-500">
-                              By {review.user || 'Anonymous'} • {new Date(review.date).toLocaleDateString()}
+                              By {review.user} • {new Date(review.date).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="flex items-center">

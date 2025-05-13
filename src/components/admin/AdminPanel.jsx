@@ -15,13 +15,14 @@ function AdminPanel() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      
       if (currentUser) {
         const adminStatus = await checkAdminAccess(currentUser.uid);
+        setUser(currentUser);
         setIsAdmin(adminStatus);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
       }
-      
       setLoading(false);
     });
     

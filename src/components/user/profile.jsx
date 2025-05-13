@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth, db } from "../../config/firebase";
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import ChangePassword from "./ChangePassword";
+import DeleteAccount from "./DeleteAccount";
 import { getAuth, updateProfile } from "firebase/auth";
 import { createClient } from "@supabase/supabase-js";
 import { Link } from "react-router-dom";
@@ -23,8 +24,10 @@ function Profile({ setUserRole }) {
   const [uploading, setUploading] = useState(false);
   const [pic, setPic] = useState(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [favoriteCafes, setFavoriteCafes] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const user = auth.currentUser;
 
@@ -135,6 +138,10 @@ function Profile({ setUserRole }) {
         const profile = userSnapshot.data();
         setProfileData(profile);
         setUserRole(profile.role);
+        
+        // Check if user is admin
+        setIsAdmin(profile.role === "admin");
+        
         localStorage.setItem("userRole", profile.role);
       } else {
         const newProfile = {
@@ -147,7 +154,7 @@ function Profile({ setUserRole }) {
         await setDoc(userDocRef, newProfile);
         setProfileData(newProfile);
         setUserRole("user");
-
+        setIsAdmin(false);
         localStorage.setItem("userRole", "user");
       }
     } catch (err) {
@@ -182,17 +189,31 @@ function Profile({ setUserRole }) {
 
   const handleSave = async () => {
     try {
+      // Create a copy of profileData that we'll modify based on user permissions
+      const dataToUpdate = { ...profileData };
+      
+      // If user is not an admin, remove role from the update
+      // This ensures we don't even try to update fields that would be rejected by security rules
+      if (!isAdmin) {
+        const { role, ...allowedFields } = dataToUpdate;
+        Object.assign(dataToUpdate, allowedFields);
+      }
+      
       // Update Firestore profile
       const userDocRef = doc(db, "profiles", user.uid);
-      await updateDoc(userDocRef, profileData);
+      await updateDoc(userDocRef, dataToUpdate);
       
       // Also update Firebase Auth display name
       await updateProfile(auth.currentUser, {
         displayName: profileData.name
       });
       
-      setUserRole(profileData.role);
-      localStorage.setItem("userRole", profileData.role);
+      // Only update the role in app state if user is admin
+      if (isAdmin) {
+        setUserRole(profileData.role);
+        localStorage.setItem("userRole", profileData.role);
+      }
+      
       setIsEditing(false);
       alert("Profile updated successfully!");
     } catch (err) {
@@ -203,6 +224,10 @@ function Profile({ setUserRole }) {
 
   const handleChangePasswordClick = () => {
     setShowChangePassword(true);
+  };
+  
+  const handleDeleteAccountClick = () => {
+    setShowDeleteAccount(true);
   };
 
   const LoadingOverlay = () => (
@@ -387,25 +412,49 @@ function Profile({ setUserRole }) {
 
                   {/* Only show password change button for users with password auth */}
                   {isPasswordProvider && (
-                    <button
-                      onClick={handleChangePasswordClick}
-                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg 
-                            hover:bg-gray-200 transition-colors flex items-center gap-2"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleChangePasswordClick}
+                        className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg 
+                              hover:bg-gray-200 transition-colors flex items-center gap-2"
                       >
-                        <path
-                          fillRule="evenodd"
-                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Change Password
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Change Password
+                      </button>
+                      
+                      {/* Delete Account Button */}
+                      <button
+                        onClick={handleDeleteAccountClick}
+                        className="p-2 bg-red-100 text-red-600 rounded-lg 
+                              hover:bg-red-200 transition-colors flex items-center"
+                        aria-label="Delete Account"
+                        title="Delete Account"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -425,20 +474,27 @@ function Profile({ setUserRole }) {
                     />
                   </div>
 
+                  {/* Only show editable role field to admins */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Role
                     </label>
-                    <select
-                      name="role"
-                      value={profileData.role}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#6B7AEE] focus:border-transparent"
-                    >
-                      <option value="user">Regular User</option>
-                      <option value="owner">Cafe Owner</option>
-                      <option value="admin">Administrator</option>
-                    </select>
+                    {isAdmin ? (
+                      <select
+                        name="role"
+                        value={profileData.role}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#6B7AEE] focus:border-transparent"
+                      >
+                        <option value="user">Regular User</option>
+                        <option value="owner">Cafe Owner</option>
+                        <option value="admin">Administrator</option>
+                      </select>
+                    ) : (
+                      <p className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-200 text-gray-500">
+                        {profileData.role}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2">
@@ -515,6 +571,11 @@ function Profile({ setUserRole }) {
       {/* Change Password Modal */}
       {showChangePassword && (
         <ChangePassword onClose={() => setShowChangePassword(false)} />
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteAccount && (
+        <DeleteAccount onClose={() => setShowDeleteAccount(false)} />
       )}
     </>
   );

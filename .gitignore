@@ -1,3 +1,5 @@
+# Firebase cache
+.firebase/
 
 serviceAccountKey.json
 # Logs

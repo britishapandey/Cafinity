@@ -35,7 +35,7 @@ function Reviews({
       setLoadingAISummary(true);
       // Concatenate review texts into one prompt
       const reviewsText = reviews.map((r) => r.text).join("\n");
-      const prompt = `Summarize the following cafe reviews in a concise paragraph:\n\n${reviewsText}`;
+      const prompt = `Summarize the following cafe reviews in a concise paragraph, no more than 3 sentences:\n\n${reviewsText}`;
       
       try {
         const response = await openai.chat.completions.create({

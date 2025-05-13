@@ -1,9 +1,10 @@
+// Updates to CafeView.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc } from 'firebase/firestore';
-import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc, getDoc } from 'firebase/firestore';
+import { Star, ArrowLeft, ArrowRight, Image as ImageIcon, Store } from 'lucide-react';
 import Reviews from "../reviews/Review.jsx";
 import getCafesCollection from '../../utils/cafeCollection';
 
@@ -21,11 +22,14 @@ function CafeView() {
   const [seatingRating, setSeatingRating] = useState(null);
   const [wifiRating, setWifiRating] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false); // Add state for favorite status
+  const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteDocId, setFavoriteDocId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
   
   const [reviewError, setReviewError] = useState(null);
-
+  const navigate = useNavigate();
   const { id } = useParams();
   
   useEffect(() => {
@@ -57,6 +61,32 @@ function CafeView() {
       }
     };
     getCafeList();
+  }, [id]);
+
+  // Add auth state listener and get user role
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      
+      if (user) {
+        // Check if cafe is favorite
+        checkIfFavorite(user.uid, id);
+        
+        // Get user role
+        try {
+          const userDocRef = doc(db, "profiles", user.uid);
+          const userSnapshot = await getDoc(userDocRef);
+          
+          if (userSnapshot.exists()) {
+            setUserRole(userSnapshot.data().role);
+          }
+        } catch (err) {
+          console.error("Error getting user role:", err);
+        }
+      }
+    });
+    
+    return () => unsubscribe();
   }, [id]);
 
   const checkIfFavorite = async (userId, cafeId) => {
@@ -117,6 +147,58 @@ function CafeView() {
     }
   };
 
+  // Handle claiming cafe
+  const handleClaimCafe = async () => {
+    if (!currentUser || userRole !== 'owner') {
+      alert("Only cafe owners can claim cafes.");
+      return;
+    }
+    
+    setIsClaiming(true);
+    
+    try {
+      const cafeDocRef = doc(db, "googleCafes", id);
+      
+      // Check if cafe is already claimed
+      const cafeDoc = await getDoc(cafeDocRef);
+      if (cafeDoc.exists() && cafeDoc.data().ownerId) {
+        const currentOwnerId = cafeDoc.data().ownerId;
+        
+        // If already claimed by this user
+        if (currentOwnerId === currentUser.uid) {
+          alert("You already own this cafe!");
+          setIsClaiming(false);
+          return;
+        }
+        
+        // If claimed by someone else
+        alert("This cafe has already been claimed by another owner.");
+        setIsClaiming(false);
+        return;
+      }
+      
+      // Update cafe with owner information
+      await updateDoc(cafeDocRef, {
+        ownerId: currentUser.uid,
+        ownerSince: new Date().toISOString()
+      });
+      
+      // Show success message
+      setClaimSuccess(true);
+      
+      // Redirect to business dashboard after a short delay
+      setTimeout(() => {
+        navigate('/business');
+      }, 3000);
+      
+    } catch (err) {
+      console.error("Error claiming cafe:", err);
+      alert("Failed to claim cafe. Please try again later.");
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
     const [start, end] = hoursString.split('-');
@@ -143,14 +225,6 @@ function CafeView() {
   };
 
   const [currentUser, setCurrentUser] = useState(null);
-
-  // Add auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const nextImage = () => {
     const cafe = cafeList.find((c) => c.id === id);
@@ -285,10 +359,23 @@ function CafeView() {
   // Get the image URLs once at the component level
   const imageUrls = getImageUrls();
 
+  // Check if cafe already has an owner
+  const hasCafeOwner = Boolean(cafe.ownerId);
+  // Check if current user owns this cafe
+  const isCurrentUserOwner = currentUser && cafe.ownerId === currentUser.uid;
+
   return (
     <div className="min-h-screen bg-gray-50">
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        {/* Show claim success message */}
+        {claimSuccess && (
+          <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md">
+            <p className="font-semibold">Congratulations!</p>
+            <p>You've successfully claimed this cafe. Redirecting to your business dashboard...</p>
+          </div>
+        )}
+        
         {/* Cafe Hero Section */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           {imageUrls.length > 0 ? (
@@ -383,6 +470,46 @@ function CafeView() {
                   {cafe.categories && cafe.categories.split(', ')[0]}
                 </span>
               </div>
+
+              {/* Cafe ownership status */}
+              {hasCafeOwner && (
+                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center">
+                    <Store className="text-blue-500 mr-2" size={20} />
+                    <span className="text-sm font-medium text-blue-800">
+                      {isCurrentUserOwner 
+                        ? "You own this cafe" 
+                        : "This cafe has been claimed by an owner"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Claim Cafe Button - only shown for owners who haven't claimed this cafe */}
+              {userRole === 'owner' && !hasCafeOwner && !isCurrentUserOwner && (
+                <div className="mb-6">
+                  <button
+                    onClick={handleClaimCafe}
+                    disabled={isClaiming}
+                    className="flex items-center justify-center w-full p-3 bg-[#A07855] text-white rounded-lg hover:bg-[#8A6744] transition-colors"
+                  >
+                    {isClaiming ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Store className="mr-2" size={18} />
+                        Claim This Cafe
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Claiming this cafe will allow you to manage its details and respond to reviews.
+                  </p>
+                </div>
+              )}
 
               {/* Hours Section */}
               <div className="mb-6">

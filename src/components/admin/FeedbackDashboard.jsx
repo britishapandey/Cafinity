@@ -423,28 +423,24 @@ function FeedbackDashboard() {
                           </div>
                         </div>
                         
-                        <div className="mt-4 space-y-3">
+                        <div className="mt-2 space-y-3">
+                          <div className="flex flex-wrap gap-2 mb-2">
+                          {
+                            review.attributeRatings && Object.entries(review.attributeRatings)
+                            .filter(([_, value]) => {
+                              return value !== null;
+                            }
+                            ).map(([key, value]) => (
+                              <div key={key} className="">
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                {key.replace(/([A-Z])/g, ' $1').trim()}: {value}/5
+                                </span>
+                              </div>
+                            ))
+                          }
+                          </div>
                           <p className="text-gray-700">{review.text}</p>
-                          
-                          {(review.noiseRating || review.seatingRating || review.wifiRating) && (
-                            <div className="flex flex-wrap gap-2">
-                              {review.noiseRating && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Noise: {review.noiseRating}/5
-                                </span>
-                              )}
-                              {review.seatingRating && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  Seating: {review.seatingRating}/5
-                                </span>
-                              )}
-                              {review.wifiRating && (
-                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                                  WiFi: {review.wifiRating}/5
-                                </span>
-                              )}
-                            </div>
-                          )}
+                        
                           
                           <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button className="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">

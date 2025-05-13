@@ -1,26 +1,42 @@
+// Updated src/components/auth/login.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, signOut, sendEmailVerification } from "firebase/auth";
 import { auth, googleProvider } from "../../config/firebase";
+import { updateDoc } from "firebase/firestore";
+import VerificationPopup from "./VerificationPopup";
+import ForgotPassword from "./ForgotPassword";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+  const [showForgotPasswordPopup, setShowForgotPasswordPopup] = useState(false);
   const navigate = useNavigate();
 
-  // regular email login
+  // Regular email login
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Check if email is verified
+      if (!user.emailVerified) {
+        // Show verification popup
+        setShowVerificationPopup(true);
+        setLoading(false); // Important: stop the loading state
+        return; // Important: prevent further execution
+      }
+      
+      // Only navigate to home if email is verified
       navigate("/");
     } catch (err) {
       setError("Invalid email or password. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -35,8 +51,13 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = () => {
+    setShowForgotPasswordPopup(true);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-[#FAF8F5]">
+      {/* Original login form */}
       <h1 className="text-4xl font-bold mb-6">Welcome back to Cafinity!</h1>
       <form
         className="bg-white p-6 shadow-lg rounded-md w-80"
@@ -65,6 +86,14 @@ const Login = () => {
             className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-[#B07242]"
             disabled={loading}
           />
+          <button 
+            type="button" 
+            onClick={handleForgotPassword}
+            className="text-[#B07242] text-sm text-right mt-1 hover:underline bg-transparent border-none p-0 m-0 cursor-pointer"
+            style={{ border: 'none', margin: 0, padding: 0 }}
+          >
+            Forgot Password?
+          </button>
         </div>
         {/* Center-align button */}
         <div className="flex justify-center ">
@@ -85,6 +114,7 @@ const Login = () => {
         <hr className="w-12 border border-gray-400" /> or{" "}
         <hr className="w-12 border border-gray-400" />
       </div>
+      {/* Google sign-in button */}
       <button
         onClick={handleGoogleSignIn}
         disabled={loading}
@@ -101,8 +131,22 @@ const Login = () => {
           Register here
         </Link>
       </p>
-      {/* checking errors and displaying in red when necssary */}
+       {/* Error message */}
       {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
+
+      {/* Verification Popup Overlay */}
+      <VerificationPopup 
+        isOpen={showVerificationPopup}
+        onClose={() => setShowVerificationPopup(false)}
+        isRegistration={false}
+      />
+
+      {/* Forgot Password Popup */}
+      {showForgotPasswordPopup && (
+        <ForgotPassword 
+          onClose={() => setShowForgotPasswordPopup(false)} 
+        />
+      )}
     </div>
   );
 };

@@ -1,7 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore"; // ENSURE THIS LINE IS EXACT
+import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import {getFirestore, initializeFirestore,persistentLocalCache,
+  persistentMultipleTabManager,
+  CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBajomjEOuQpUl4exCs7UyYz3MeaoRDyig",
@@ -17,6 +20,13 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED
+  })
+})
+
+// export const db = getFirestore(app)
 export const storage = getStorage(app);
 export { collection, getDocs, addDoc }; 

@@ -1,10 +1,12 @@
+// Updates to CafeView.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../../config/firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
-import { Star, ArrowLeft, ArrowRight, Image as ImageIcon } from 'lucide-react';
-import Reviews from "../reviews/Review.jsx"
+import { collection, getDocs, doc, updateDoc, addDoc, query, where, deleteDoc, getDoc } from 'firebase/firestore';
+import { Star, ArrowLeft, ArrowRight, Image as ImageIcon, Store } from 'lucide-react';
+import Reviews from "../reviews/Review.jsx";
+import getCafesCollection from '../../utils/cafeCollection';
 
 function CafeView() {
   const [cafeList, setCafeList] = useState([]);
@@ -26,15 +28,20 @@ function CafeView() {
     NoiseLevel: null,
   })
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteDocId, setFavoriteDocId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
   
   const [reviewError, setReviewError] = useState(null);
-
+  const navigate = useNavigate();
   const { id } = useParams();
-  const cafesCollectionRef = collection(db, "cafes");
-
+  
   useEffect(() => {
     const getCafeList = async () => {
       try {
+        const cafesCollectionRef = getCafesCollection();
         const data = await getDocs(cafesCollectionRef);
         const filteredData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setCafeList(filteredData);
@@ -43,7 +50,7 @@ function CafeView() {
         const currentCafe = filteredData.find((c) => c.id === id);
         if (currentCafe) {
           // Fetch reviews from subcollection
-          const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+          const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
           const reviewsSnapshot = await getDocs(reviewsCollectionRef);
           const reviewsData = reviewsSnapshot.docs.map(doc => ({
             ...doc.data(),
@@ -61,6 +68,142 @@ function CafeView() {
     };
     getCafeList();
   }, [id]);
+
+  // Add auth state listener and get user role
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      
+      if (user) {
+        // Check if cafe is favorite
+        checkIfFavorite(user.uid, id);
+        
+        // Get user role
+        try {
+          const userDocRef = doc(db, "profiles", user.uid);
+          const userSnapshot = await getDoc(userDocRef);
+          
+          if (userSnapshot.exists()) {
+            setUserRole(userSnapshot.data().role);
+          }
+        } catch (err) {
+          console.error("Error getting user role:", err);
+        }
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [id]);
+
+  const checkIfFavorite = async (userId, cafeId) => {
+    try {
+      // Using a top-level "favorites" collection with queries
+      const favoritesRef = collection(db, "favorites");
+      const q = query(
+          favoritesRef,
+          where("userId", "==", userId),
+          where("cafeId", "==", cafeId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const isFav = !querySnapshot.empty;
+      setIsFavorite(isFav);
+
+      // Save the document ID for deletion later if needed
+      if (isFav) {
+        setFavoriteDocId(querySnapshot.docs[0].id);
+      }
+    } catch (error) {
+      console.error("Error checking favorite status:", error);
+    }
+  };
+
+  const handleFavoriteToggle = async (e) => {
+    e.stopPropagation(); // Prevent navigation
+
+    if (!currentUser) {
+      // Optionally redirect to login or show a message
+      alert("Please log in to save favorites");
+      return;
+    }
+
+    try {
+      if (isFavorite && favoriteDocId) {
+        // Remove from favorites
+        await deleteDoc(doc(db, "favorites", favoriteDocId));
+      } else {
+        // Add to favorites
+        await addDoc(collection(db, "favorites"), {
+          userId: currentUser.uid,
+          cafeId: cafe.id,
+          cafeName: cafe.name,
+          addedAt: new Date()
+        });
+      }
+
+      // Update state
+      setIsFavorite(!isFavorite);
+
+      // If we just favorited, we need to get the new doc ID
+      if (!isFavorite) {
+        checkIfFavorite(currentUser.uid, cafe.id);
+      }
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+    }
+  };
+
+  // Handle claiming cafe
+  const handleClaimCafe = async () => {
+    if (!currentUser || userRole !== 'owner') {
+      alert("Only cafe owners can claim cafes.");
+      return;
+    }
+    
+    setIsClaiming(true);
+    
+    try {
+      const cafeDocRef = doc(db, "googleCafes", id);
+      
+      // Check if cafe is already claimed
+      const cafeDoc = await getDoc(cafeDocRef);
+      if (cafeDoc.exists() && cafeDoc.data().ownerId) {
+        const currentOwnerId = cafeDoc.data().ownerId;
+        
+        // If already claimed by this user
+        if (currentOwnerId === currentUser.uid) {
+          alert("You already own this cafe!");
+          setIsClaiming(false);
+          return;
+        }
+        
+        // If claimed by someone else
+        alert("This cafe has already been claimed by another owner.");
+        setIsClaiming(false);
+        return;
+      }
+      
+      // Update cafe with owner information
+      await updateDoc(cafeDocRef, {
+        ownerId: currentUser.uid,
+        ownerSince: new Date().toISOString()
+      });
+      
+      // Show success message
+      setClaimSuccess(true);
+      
+      // Redirect to business dashboard after a short delay
+      setTimeout(() => {
+        navigate('/business');
+      }, 3000);
+      
+    } catch (err) {
+      console.error("Error claiming cafe:", err);
+      alert("Failed to claim cafe. Please try again later.");
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   const formatHours = (hoursString) => {
     if (!hoursString || typeof hoursString !== 'string') return 'Closed';
@@ -89,24 +232,22 @@ function CafeView() {
 
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Add auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
-
   const nextImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === cafe.images.length - 1 ? 0 : prev + 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === cafe.images.length - 1 ? 0 : prev + 1
+      );
+    }
   };
   
   const prevImage = () => {
-    setCurrentImageIndex(prev => 
-      prev === 0 ? cafe.images.length - 1 : prev - 1
-    );
+    const cafe = cafeList.find((c) => c.id === id);
+    if (cafe?.images && cafe.images.length > 0) {
+      setCurrentImageIndex(prev => 
+        prev === 0 ? cafe.images.length - 1 : prev - 1
+      );
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -118,9 +259,9 @@ function CafeView() {
     }
   
     try {
-      const reviewsCollectionRef = collection(db, "cafes", id, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", id, "reviews");
       const reviewToAdd = {
-        user: currentUser.displayName || "Anonymous", // Use displayName instead of name
+        user: currentUser.displayName, // Use displayName instead of name
         userId: currentUser.uid,
         rating: parseInt(newReview.rating),
         attributeRatings: attributeRatings,
@@ -130,29 +271,40 @@ function CafeView() {
       };
   
       // Add review to subcollection
-      await addDoc(reviewsCollectionRef, reviewToAdd);
+      const docRef = await addDoc(reviewsCollectionRef, reviewToAdd);
+
+      // add ID to review object for notif purposes
+      const reviewWithId = {
+        ...reviewToAdd,
+        id: docRef.id
+      };
   
       // Update review count and stars in the cafe document
       await updateCafeRatingStats(id);
   
-      // Update local state
-      setReviews(prev => [...prev, reviewToAdd]);
+      // Update local state with the new review (including the document ID)
+      setReviews(prev => [...prev, { ...reviewToAdd, id: docRef.id }]);
+      
+      // Reset form
       setNewReview({ user: "", rating: 5, text: "" });
       setError(null);
       setReviewError(null);
-    } catch (err) { // Fix: use err instead of error for the caught exception
+
+      return reviewWithId; // return the new review with ID for notif purposes
+    } catch (err) { // Use err instead of error for the caught exception
       console.error("Error submitting review:", err);
       setReviewError("Error submitting review: " + (err?.message || "Unknown error"));
+      throw err; // Rethrow error for notification handling
     }
   };
 
   const updateCafeRatingStats = async (cafeId) => {
     try {
-      const reviewsCollectionRef = collection(db, "cafes", cafeId, "reviews");
+      const reviewsCollectionRef = collection(db, "googleCafes", cafeId, "reviews");
       const reviewsSnapshot = await getDocs(reviewsCollectionRef);
       const reviews = reviewsSnapshot.docs.map(doc => doc.data());
       
-      const cafeDocRef = doc(db, "cafes", cafeId);
+      const cafeDocRef = doc(db, "googleCafes", cafeId);
       
       // Calculate average rating
       const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -169,6 +321,19 @@ function CafeView() {
   };
 
   const cafe = cafeList.find((c) => c.id === id);
+  
+  // Get array of all image URLs
+  const getImageUrls = () => {
+    if (!cafe || !cafe.images) return [];
+    
+    return cafe.images.map(image => {
+      if (typeof image === 'string') {
+        return image;
+      }
+      return image.url || null;
+    }).filter(url => url !== null);
+  };
+  
 
   if (loading) {
     return (
@@ -194,23 +359,39 @@ function CafeView() {
     );
   }
 
+  // Get the image URLs once at the component level
+  const imageUrls = getImageUrls();
+
+  // Check if cafe already has an owner
+  const hasCafeOwner = Boolean(cafe.ownerId);
+  // Check if current user owns this cafe
+  const isCurrentUserOwner = currentUser && cafe.ownerId === currentUser.uid;
+
   return (
     <div className="min-h-screen bg-gray-50">
 
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        {/* Show claim success message */}
+        {claimSuccess && (
+          <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md">
+            <p className="font-semibold">Congratulations!</p>
+            <p>You've successfully claimed this cafe. Redirecting to your business dashboard...</p>
+          </div>
+        )}
+        
         {/* Cafe Hero Section */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          {cafe.images && cafe.images.length > 0 ? (
+          {imageUrls.length > 0 ? (
             <div className="relative h-64 sm:h-80 md:h-96">
               <img
                 className="w-full h-full object-cover"
-                src={cafe.images[currentImageIndex].url}
+                src={imageUrls[currentImageIndex]}
                 alt={`Cafe ${cafe.name} - Image ${currentImageIndex + 1}`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               
               {/* Navigation arrows (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <>
                   <button 
                     onClick={prevImage}
@@ -230,9 +411,9 @@ function CafeView() {
               )}
               
               {/* Image counter (only show if multiple images exist) */}
-              {cafe.images.length > 1 && (
+              {imageUrls.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentImageIndex + 1} / {cafe.images.length}
+                  {currentImageIndex + 1} / {imageUrls.length}
                 </div>
               )}
             </div>
@@ -251,7 +432,26 @@ function CafeView() {
           {/* Left Column - Cafe Info */}
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
+              <div className="flex justify-between w-full">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{cafe.name}</h2>
+                <svg
+                  onClick={handleFavoriteToggle}
+                  className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'} cursor-pointer ml-2`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  fill={isFavorite ? "currentColor" : "none"}
+                  strokeWidth="2"
+                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                  role="button"
+                  tabIndex="0"
+              >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+              </div>
               <p className="text-gray-600 mb-4">
                 {cafe.address}, {cafe.city}, {cafe.state} {cafe.postal_code}
               </p>
@@ -273,6 +473,46 @@ function CafeView() {
                   {cafe.categories && cafe.categories.split(', ')[0]}
                 </span>
               </div>
+
+              {/* Cafe ownership status */}
+              {hasCafeOwner && (
+                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center">
+                    <Store className="text-blue-500 mr-2" size={20} />
+                    <span className="text-sm font-medium text-blue-800">
+                      {isCurrentUserOwner 
+                        ? "You own this cafe" 
+                        : "This cafe has been claimed by an owner"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Claim Cafe Button - only shown for owners who haven't claimed this cafe */}
+              {userRole === 'owner' && !hasCafeOwner && !isCurrentUserOwner && (
+                <div className="mb-6">
+                  <button
+                    onClick={handleClaimCafe}
+                    disabled={isClaiming}
+                    className="flex items-center justify-center w-full p-3 bg-[#A07855] text-white rounded-lg hover:bg-[#8A6744] transition-colors"
+                  >
+                    {isClaiming ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Store className="mr-2" size={18} />
+                        Claim This Cafe
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    Claiming this cafe will allow you to manage its details and respond to reviews.
+                  </p>
+                </div>
+              )}
 
               {/* Hours Section */}
               <div className="mb-6">
@@ -375,7 +615,6 @@ function CafeView() {
             handleInputChange={handleInputChange}
             attributeRatings={attributeRatings}
             setAttributeRatings={setAttributeRatings}
-            handleReviewSubmit={handleReviewSubmit}
             currentUser={currentUser}
             reviewError={reviewError}
             cafe={cafe}

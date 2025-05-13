@@ -4,6 +4,7 @@ import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase.js';
 import getCafesCollection from '../../utils/cafeCollection';
 import { createNotification, createReviewNotification, createFlaggedReviewNotification } from '../../models/NotificationModel';
+import filter from 'leo-profanity';
 
 function Reviews({
     reviews,
@@ -275,7 +276,7 @@ function Reviews({
                               )}
                             </div>
                           )}
-                          <p className="text-gray-700 text-sm">{review.text}</p>
+                          <p className="text-gray-700 text-sm">{filter.clean(review.text)}</p>
                         </div>
                       </div>
                       <button className="absolute bottom-0 right-0 group-hover:opacity-100 opacity-0 transition-opacity ease-in-out p-0 bg-white border-none"

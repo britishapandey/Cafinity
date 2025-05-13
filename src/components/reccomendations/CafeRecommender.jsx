@@ -133,6 +133,7 @@ function CafeRecommender() {
       id: 1,
       name: "Morning Brew Coffee",
       address: "123 Main Street",
+      city: "Long Beach",
       state: "CA",
       postal_code: "94105",
       stars: 4.8,
@@ -163,6 +164,8 @@ function CafeRecommender() {
       id: 2,
       name: "Urban Roast",
       address: "456 Market Ave",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94107",
       stars: 4.5,
@@ -193,6 +196,8 @@ function CafeRecommender() {
       id: 3,
       name: "The Coffee Studio",
       address: "789 Pine Street",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94108",
       stars: 4.7,
@@ -223,6 +228,8 @@ function CafeRecommender() {
       id: 4,
       name: "Bean There Cafe",
       address: "101 Oak Street",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94110",
       stars: 4.2,
@@ -253,6 +260,8 @@ function CafeRecommender() {
       id: 5,
       name: "Espresso Express",
       address: "222 Cedar Lane",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94112",
       stars: 4.6,
@@ -283,6 +292,8 @@ function CafeRecommender() {
       id: 6,
       name: "The Grind House",
       address: "333 Maple Ave",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94114",
       stars: 4.9,
@@ -313,6 +324,8 @@ function CafeRecommender() {
       id: 7,
       name: "Latte Love",
       address: "444 Birch Street",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94115",
       stars: 4.4,
@@ -343,6 +356,8 @@ function CafeRecommender() {
       id: 8,
       name: "Brewful Thinking",
       address: "555 Walnut Court",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94117",
       stars: 4.3,
@@ -373,6 +388,8 @@ function CafeRecommender() {
       id: 9,
       name: "Rise & Grind",
       address: "666 Redwood Road",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94118",
       stars: 4.1,
@@ -403,6 +420,8 @@ function CafeRecommender() {
       id: 10,
       name: "Daily Dose",
       address: "777 Spruce Avenue",
+
+      city: "Long Beach",
       state: "CA",
       postal_code: "94119",
       stars: 4.0,

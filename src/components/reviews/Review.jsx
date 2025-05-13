@@ -1,10 +1,17 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { FlagIcon, Star } from 'lucide-react';
 import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../config/firebase.js';
 import getCafesCollection from '../../utils/cafeCollection';
 import { createNotification, createReviewNotification, createFlaggedReviewNotification } from '../../models/NotificationModel';
 import filter from 'leo-profanity';
+import OpenAI from 'openai';
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true // testing only
+});
 
 function Reviews({
     reviews,
@@ -21,6 +28,34 @@ function Reviews({
     reviewError,
     cafe
   }){
+    const [loadingAISummary, setLoadingAISummary] = useState(false);
+    const [aiSummary, setAISummary] = useState("");
+    // Handler to generate an AI summary of reviews using the OpenAI package
+    const handleAISummarize = async () => {
+      setLoadingAISummary(true);
+      // Concatenate review texts into one prompt
+      const reviewsText = reviews.map((r) => r.text).join("\n");
+      const prompt = `Summarize the following cafe reviews in a concise paragraph:\n\n${reviewsText}`;
+      
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 100,
+        });
+      
+        if (response.choices && response.choices.length > 0) {
+          setAISummary(response.choices[0].message.content.trim());
+        } else {
+          setAISummary("No summary generated.");
+        }
+      } catch (error) {
+        console.error("Error summarizing reviews:", error);
+        setAISummary("Error generating summary.");
+      } finally {
+        setLoadingAISummary(false);
+      }
+    };
 
     // Wrapper for the review submission to handle notifications
     const handleReviewSubmit = async (e) => {
@@ -226,6 +261,22 @@ function Reviews({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Customer Reviews {reviews.length > 0 && `(${reviews.length})`}
             </h3>
+
+            {/* AI Review Summarizer */}
+            <div className="mb-4">
+              <button
+                onClick={handleAISummarize}
+                className="bg-[#A07855] hover:bg-[#8C6A50] m-auto text-white font-semibold py-2 px-4 rounded-md block w-full text-center focus:outline-none focus:ring-2 focus:ring-[#A07855] focus:ring-opacity-50"
+              >
+                {loadingAISummary ? "Generating Summary..." : "Ask for AI Review Summary"}
+              </button>
+            </div>
+            {aiSummary && (
+              <div className="bg-gray-100 p-4 rounded-md mb-4">
+                <h4 className="font-bold text-gray-800 mb-2">AI Summary:</h4>
+                <p className="text-gray-700">{aiSummary}</p>
+              </div>
+            )}
     
             {reviews.length > 0 ? (
               <div className="space-y-6">
